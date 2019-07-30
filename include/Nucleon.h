@@ -9,7 +9,7 @@
 #include <vector>
 #include "BasicTypes.h"
 
-class Nucleon {
+class Nucleon : public TObject {
 
  public:
   IdType getId() const {

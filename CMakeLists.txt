@@ -6,5 +6,11 @@ include(${ROOT_USE_FILE})
 
 include_directories(include)
 
-add_library(mcIniData SHARED include/Nucleon.h src/Nucleon.cpp include/BasicTypes.h include/EventInitialState.h src/EventInitialState.cpp)
+
+ROOT_GENERATE_DICTIONARY(
+        G_MCIniData include/Nucleon.h include/EventInitialState.h
+        LINKDEF include/MCIni-LinkDef.h
+)
+
+add_library(mcIniData SHARED G_MCIniData.cxx include/Nucleon.h src/Nucleon.cpp include/BasicTypes.h include/EventInitialState.h src/EventInitialState.cpp include/MCIni-LinkDef.h)
 target_link_libraries(mcIniData PRIVATE ${ROOT_LIBRARIES})

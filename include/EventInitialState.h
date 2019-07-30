@@ -11,7 +11,7 @@
 #include "BasicTypes.h"
 #include "Nucleon.h"
 
-class EventInitialState {
+class EventInitialState : public TObject {
 
  public:
   IdType getId() const {
