@@ -41,7 +41,7 @@ public:
   void setNucleons(const std::vector<Nucleon> &nucleons) {
     EventInitialState::nucleons = nucleons;
   }
-  void Clear(Option_t* = "") {
+  void Clear(Option_t* = "") override {
     id=0;
     nucleons.clear();
     nColl=0;
@@ -66,7 +66,7 @@ private:
 
 
 
-  ClassDef(EventInitialState, 1);
+  ClassDef(EventInitialState, 1)
 };
 
 #endif //MCINI_EVENTINITIALSTATE_H

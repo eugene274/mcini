@@ -69,7 +69,8 @@ public:
     collidedNucleonIndices.push_back(index);
     isSpectator = false;
   }
-  void Clear(Option_t* = "") {
+
+  void Clear(Option_t* = "") override {
     id=0;
     pdgId=-1;
     momentum.SetXYZT(0, 0, 0, 999);
@@ -84,13 +85,15 @@ private:
 
   int pdgId{-1};
 
+
+
   TLorentzVector momentum{0, 0, 0, 999};
   TLorentzVector position{0, 0, 0, 999};
 
   bool isSpectator{true};
   std::vector <IdType > collidedNucleonIndices{};
 
-  ClassDef(Nucleon, 1);
+  ClassDef(Nucleon, 1)
 };
 
 
