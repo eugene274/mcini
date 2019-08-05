@@ -14,7 +14,6 @@
 #include <map>
 #include <string>
 
-R__LOAD_LIBRARY(libUnigen.so)
 R__LOAD_LIBRARY(libMcIniData.so)
 
 using namespace std;
