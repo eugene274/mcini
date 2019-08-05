@@ -15,4 +15,8 @@ add_library(McIniData SHARED G__McIniData src/URun.cxx src/UEvent.cxx src/UParti
 target_link_libraries(McIniData PRIVATE ${ROOT_LIBRARIES})
 
 add_library(BaseConverter STATIC src/BaseConverter.cxx include/BaseConverter.h)
-target_link_libraries(BaseConverter PRIVATE ${ROOT_LIBRARIES} McIniData)
+target_link_libraries(BaseConverter PRIVATE ${ROOT_LIBRARIES})
+target_link_libraries(BaseConverter PUBLIC McIniData)
+
+add_executable(JAMReader src/jam/JAMRunInfo.cxx)
+target_link_libraries(JAMReader PRIVATE BaseConverter)
