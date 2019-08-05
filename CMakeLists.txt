@@ -13,3 +13,6 @@ ROOT_GENERATE_DICTIONARY(
 
 add_library(McIniData SHARED G__McIniData src/URun.cxx src/UEvent.cxx src/UParticle.cxx src/Nucleon.cxx src/EventInitialState.cxx include/MCIni-LinkDef.h)
 target_link_libraries(McIniData PRIVATE ${ROOT_LIBRARIES})
+
+add_library(BaseConverter STATIC src/BaseConverter.cxx include/BaseConverter.h)
+target_link_libraries(BaseConverter PRIVATE ${ROOT_LIBRARIES} McIniData)

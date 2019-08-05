@@ -9,9 +9,26 @@
 #include <vector>
 #include "BasicTypes.h"
 
+class BaseConverter;
+
 class Nucleon : public TObject {
 
- public:
+public:
+  Nucleon() {}
+  Nucleon(int pdgId, const TLorentzVector &momentum, const TLorentzVector &position, bool isSpectator)
+      : pdgId(pdgId), momentum(momentum), position(position), isSpectator(isSpectator) {}
+  Nucleon(IdType id,
+          int pdgId,
+          const TLorentzVector &momentum,
+          const TLorentzVector &position,
+          bool isSpectator,
+          const std::vector<IdType> &collidedNucleonIndices)
+      : id(id),
+        pdgId(pdgId),
+        momentum(momentum),
+        position(position),
+        isSpectator(isSpectator),
+        collidedNucleonIndices(collidedNucleonIndices) {}
   IdType getId() const {
     return id;
   }
@@ -61,7 +78,8 @@ class Nucleon : public TObject {
     collidedNucleonIndices.clear();
   }
 
- private:
+private:
+  friend class BaseConverter;
   IdType id;
 
   int pdgId{-1};

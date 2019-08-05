@@ -11,9 +11,12 @@
 #include "BasicTypes.h"
 #include "Nucleon.h"
 
+class BaseConverter;
+
 class EventInitialState : public TObject {
 
- public:
+public:
+  EventInitialState() = default;
   IdType getId() const {
     return id;
   }
@@ -52,13 +55,14 @@ class EventInitialState : public TObject {
   }
   
 
- private:
-  IdType id;
+private:
+  friend class BaseConverter;
+  IdType id{0};
 
-  unsigned int nColl;
-  unsigned int nPart;
+  unsigned int nColl{0};
+  unsigned int nPart{0};
 
-  std::vector <Nucleon> nucleons;
+  std::vector <Nucleon> nucleons{0};
 
 
 
