@@ -81,15 +81,13 @@ void convertUrQMD(TString inputFileName = "test.f20", TString outputFileName = "
   //       << eBeam << "\t" << endl;
 
   int nNucl = aProj + aTarg;
-  pProj = sqrt((eBeam + mProton) * (eBeam + mProton) - mProton * mProton);
-  Double_t eFull = eBeam + mProton;
-  Double_t pc = sqrt(0.5 * (mProton * eFull - mProton * mProton));
-  pProj = pc;
-  pTarg = -pc;
+//  pProj = sqrt(0.5 * (mProton * (eBeam + mProton) - mProton * mProton));
+  pProj = sqrt(0.5 * mProton * eBeam);
+  pTarg = -pProj;
 
   URun *header = new URun(generator.c_str(), comment, aProj, zProj, pProj, aTarg, zTarg, pTarg, bMin, bMax, bWeight,
                           phiMin, phiMax, sigma, iEvent);
-  //  cout << header->GetNNSqrtS() << endl;
+//  cout << header->GetNNSqrtS() << endl;
   header->Dump();
   while(inputFile)
   {
