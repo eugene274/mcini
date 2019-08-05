@@ -5,6 +5,6 @@
 #ifndef MCINI_BASICTYPES_H
 #define MCINI_BASICTYPES_H
 
-typedef unsigned int IdType;
+typedef unsigned short IdType;
 
 #endif //MCINI_BASICTYPES_H

@@ -1,16 +1,15 @@
 cmake_minimum_required(VERSION 3.1)
-project(MCIni)
+project(McIniData)
 
 find_package(ROOT REQUIRED)
 include(${ROOT_USE_FILE})
 
 include_directories(include)
 
-
 ROOT_GENERATE_DICTIONARY(
-        G_MCIniData include/Nucleon.h include/EventInitialState.h
+        G__McIniData include/Nucleon.h include/EventInitialState.h include/URun.h include/UEvent.h include/UParticle.h 
         LINKDEF include/MCIni-LinkDef.h
 )
 
-add_library(mcIniData SHARED G_MCIniData.cxx include/Nucleon.h src/Nucleon.cpp include/BasicTypes.h include/EventInitialState.h src/EventInitialState.cpp include/MCIni-LinkDef.h)
-target_link_libraries(mcIniData PRIVATE ${ROOT_LIBRARIES})
+add_library(McIniData SHARED G__McIniData src/URun.cxx src/UEvent.cxx src/UParticle.cxx src/Nucleon.cxx src/EventInitialState.cxx include/MCIni-LinkDef.h)
+target_link_libraries(McIniData PRIVATE ${ROOT_LIBRARIES})

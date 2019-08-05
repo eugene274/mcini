@@ -38,6 +38,19 @@ class EventInitialState : public TObject {
   void setNucleons(const std::vector<Nucleon> &nucleons) {
     EventInitialState::nucleons = nucleons;
   }
+  void Clear(Option_t* = "") {
+    id=0;
+    nucleons.clear();
+    nColl=0;
+    nPart=0;
+  }
+  void addNucleon (Nucleon &nucleon) {
+    nucleons.push_back(nucleon);
+  }
+  Nucleon &getNucleon (int id) {
+    return nucleons.at(id-1);
+  }
+  
 
  private:
   IdType id;
