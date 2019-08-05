@@ -13,25 +13,22 @@ class BaseConverter;
 
 class Nucleon : public TObject {
 
- public:
+public:
   Nucleon() {}
-  Nucleon(int pdgId, double mass, const TLorentzVector &momentum, const TLorentzVector &position, bool isSpectator)
-      : pdgId(pdgId), mass(mass), momentum(momentum), position(position), isSpectator(isSpectator) {}
+  Nucleon(int pdgId, const TLorentzVector &momentum, const TLorentzVector &position, bool isSpectator)
+      : pdgId(pdgId), momentum(momentum), position(position), isSpectator(isSpectator) {}
   Nucleon(IdType id,
           int pdgId,
-          double mass,
           const TLorentzVector &momentum,
           const TLorentzVector &position,
           bool isSpectator,
-          const std::vector<IdType> &collidedNucleiIndices)
+          const std::vector<IdType> &collidedNucleonIndices)
       : id(id),
         pdgId(pdgId),
-        mass(mass),
         momentum(momentum),
         position(position),
         isSpectator(isSpectator),
-        collidedNucleiIndices(collidedNucleiIndices) {}
-
+        collidedNucleonIndices(collidedNucleonIndices) {}
   IdType getId() const {
     return id;
   }
@@ -43,12 +40,6 @@ class Nucleon : public TObject {
   }
   void setPdgId(int pdgId) {
     Nucleon::pdgId = pdgId;
-  }
-  double getMass() const {
-    return mass;
-  }
-  void setMass(double mass) {
-    Nucleon::mass = mass;
   }
   const TLorentzVector &getMomentum() const {
     return momentum;
@@ -62,34 +53,45 @@ class Nucleon : public TObject {
   void setPosition(const TLorentzVector &position) {
     Nucleon::position = position;
   }
-  bool isSpectator1() const {
+  bool isSpect() const {
     return isSpectator;
   }
   void setIsSpectator(bool isSpectator) {
     Nucleon::isSpectator = isSpectator;
   }
-  const std::vector<IdType> &getCollidedNucleiIndices() const {
-    return collidedNucleiIndices;
+  const std::vector<IdType> &getCollidedNucleonIndices() const {
+    return collidedNucleonIndices;
   }
-  void setCollidedNucleiIndices(const std::vector<IdType> &collidedNucleiIndices) {
-    Nucleon::collidedNucleiIndices = collidedNucleiIndices;
+  void setCollidedNucleonIndices(const std::vector<IdType> &collidedNucleonIndices) {
+    Nucleon::collidedNucleonIndices = collidedNucleonIndices;
+  }
+  void addCollidedNucleonIndex(int index) {
+    collidedNucleonIndices.push_back(index);
+    isSpectator = false;
+  }
+  void Clear(Option_t* = "") {
+    id=0;
+    pdgId=-1;
+    momentum.SetXYZT(0, 0, 0, 999);
+    position.SetXYZT(0, 0, 0, 999);
+    isSpectator=true;
+    collidedNucleonIndices.clear();
   }
 
- private:
+private:
   friend class BaseConverter;
-
   IdType id;
 
   int pdgId{-1};
 
-  double mass;
-  TLorentzVector momentum{};
-  TLorentzVector position{};
+  TLorentzVector momentum{0, 0, 0, 999};
+  TLorentzVector position{0, 0, 0, 999};
 
-  bool isSpectator{false};
-  std::vector<IdType> collidedNucleiIndices{};
+  bool isSpectator{true};
+  std::vector <IdType > collidedNucleonIndices{};
 
- ClassDef(Nucleon, 1);
+  ClassDef(Nucleon, 1);
 };
+
 
 #endif //MCININUCLEONH

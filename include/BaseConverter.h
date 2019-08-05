@@ -40,8 +40,8 @@ class BaseConverter {
   }
 
   static void registerCollision(Nucleon &n1, Nucleon &n2) {
-    n1.collidedNucleiIndices.push_back(n2.id);
-    n2.collidedNucleiIndices.push_back(n1.id);
+    n1.collidedNucleonIndices.push_back(n2.id);
+    n2.collidedNucleonIndices.push_back(n1.id);
   }
 
 

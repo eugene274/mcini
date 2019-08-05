@@ -11,14 +11,12 @@
 #include "BasicTypes.h"
 #include "Nucleon.h"
 
-// fwd declarations
 class BaseConverter;
 
 class EventInitialState : public TObject {
 
- public:
+public:
   EventInitialState() = default;
-
   IdType getId() const {
     return id;
   }
@@ -43,8 +41,21 @@ class EventInitialState : public TObject {
   void setNucleons(const std::vector<Nucleon> &nucleons) {
     EventInitialState::nucleons = nucleons;
   }
+  void Clear(Option_t* = "") {
+    id=0;
+    nucleons.clear();
+    nColl=0;
+    nPart=0;
+  }
+  void addNucleon (Nucleon &nucleon) {
+    nucleons.push_back(nucleon);
+  }
+  Nucleon &getNucleon (int id) {
+    return nucleons.at(id-1);
+  }
+  
 
- private:
+private:
   friend class BaseConverter;
   IdType id{0};
 
