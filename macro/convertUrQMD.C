@@ -27,7 +27,7 @@ void convertUrQMD(TString inputFileName = "test.f20", TString outputFileName = "
   string generator;
   const char *comment = "";
   int aProj, zProj, aTarg, zTarg;
-  double pProj, pTarg, sqrtSnn;
+  double pProj, pTarg, eBeam;
   double phi, b, numDust, px, py, pz, e, m, x, y, z, t;
   string charDust;
   int id, id2, pdg, iEvent, nColl, nPart;
@@ -75,17 +75,18 @@ void convertUrQMD(TString inputFileName = "test.f20", TString outputFileName = "
   replace(linestr.begin(), linestr.end(), ')', ' ');
   replace(linestr.begin(), linestr.end(), ',', ' ');
   istringstream iss(linestr);
-  iss >> aProj >> zProj >> charDust >> aTarg >> zTarg >> charDust >> sqrtSnn;
-  //  cout << linestr << endl;
-  //  cout << zProj << "\t" << aProj << "\t" << charDust << "\t" << zTarg << "\t" << aTarg << "\t" << charDust << "\t"
-  //       << sqrtSnn << "\t" << endl;
+  iss >> aProj >> zProj >> charDust >> aTarg >> zTarg >> charDust >> eBeam;
+  cout << linestr << endl;
+  cout << zProj << "\t" << aProj << "\t" << charDust << "\t" << zTarg << "\t" << aTarg << "\t" << charDust << "\t"
+       << eBeam << "\t" << endl;
 
   int nNucl = aProj + aTarg;
-  pProj = sqrt(0.25 * sqrtSnn * sqrtSnn - mProton * mProton);
-  pTarg = -pProj;
+  pProj = sqrt((eBeam + mProton) * (eBeam + mProton) - mProton * mProton);
+  pTarg = 0.;
 
   URun *header = new URun(generator.c_str(), comment, aProj, zProj, pProj, aTarg, zTarg, pTarg, bMin, bMax, bWeight,
                           phiMin, phiMax, sigma, iEvent);
+  cout << header->GetNNSqrtS() << endl;
   header->Dump();
   while(inputFile)
   {
@@ -93,8 +94,8 @@ void convertUrQMD(TString inputFileName = "test.f20", TString outputFileName = "
     istringstream iss1(linestr);
     int nIn = 0, nOut = 0;
     iss1 >> nIn >> nOut >> iEvent >> b >> phi;
-//    cout << linestr << endl;
-//    cout << "\t" << nIn << "\t" << nOut << "\t" << iEvent << "\t" << b << "\t" << phi << endl;
+    //    cout << linestr << endl;
+    //    cout << "\t" << nIn << "\t" << nOut << "\t" << iEvent << "\t" << b << "\t" << phi << endl;
 
     // Find new event header
     //    if(nIn == 0 && nOut == nNucl)
@@ -135,26 +136,27 @@ void convertUrQMD(TString inputFileName = "test.f20", TString outputFileName = "
       getline(inputFile, linestr);
       istringstream iss2(linestr);
       iss2 >> nIn >> nOut >> processType;
-//      cout << linestr << endl;
-//      cout << nIn << "\t" << nOut << "\t" << processType << endl;
+      //      cout << linestr << endl;
+      //      cout << nIn << "\t" << nOut << "\t" << processType << endl;
       if(processType == -1)  // end of initial state block
         break;
       getline(inputFile, linestr);
-      //cout << linestr << endl;
+      // cout << linestr << endl;
       if(nIn == 2)
       {
         istringstream iss3(linestr);
         iss3 >> id;
         getline(inputFile, linestr);
-        //cout << linestr << endl;
+        // cout << linestr << endl;
         istringstream iss4(linestr);
-        iss4 >> id2;      
+        iss4 >> id2;
         // << id << "\t" << id2 << endl;
         if(id <= nNucl && id2 <= nNucl)  // scattering between primary nucleons
         {
-  //        cout << linestr << endl;
-  //        cout << "\t" << id << "\t" << pdg << "\t" << numDust << "\t" << px << "\t" << py << "\t" << pz << "\t" << e
-  //             << "\t" << m << "\t" << x << "\t" << y << "\t" << z << "\t" << t << "\t" << endl;
+          //        cout << linestr << endl;
+          //        cout << "\t" << id << "\t" << pdg << "\t" << numDust << "\t" << px << "\t" << py << "\t" << pz <<
+          //        "\t" << e
+          //             << "\t" << m << "\t" << x << "\t" << y << "\t" << z << "\t" << t << "\t" << endl;
 
           nColl++;
           // add collided nucleon to index array
@@ -189,8 +191,8 @@ void convertUrQMD(TString inputFileName = "test.f20", TString outputFileName = "
     iniState->setNPart(nPart);
 
     // Identify final-state particles and store them
-//    cout << linestr << endl;
-//    cout << nIn << endl;
+    //    cout << linestr << endl;
+    //    cout << nIn << endl;
     if(nIn > 0 && nOut == 0)
     {
       for(int i = 0; i < nIn; i++)
@@ -215,7 +217,7 @@ void convertUrQMD(TString inputFileName = "test.f20", TString outputFileName = "
         event->AddParticle(id, pdg, status, parent, parentDecay, mate, decay, child, momentum, position, weight);
       }
     }
-    if (event->GetNpa() > nNucl)
+    if(event->GetNpa() > nNucl)
       tree->Fill();
     getline(inputFile, linestr);
   }
