@@ -215,7 +215,8 @@ void convertUrQMD(TString inputFileName = "test.f20", TString outputFileName = "
         event->AddParticle(id, pdg, status, parent, parentDecay, mate, decay, child, momentum, position, weight);
       }
     }
-    tree->Fill();
+    if (event->GetNpa() > nNucl)
+      tree->Fill();
     getline(inputFile, linestr);
   }
 
