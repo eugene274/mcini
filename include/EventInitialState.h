@@ -41,7 +41,7 @@ public:
   void setNucleons(const std::vector<Nucleon> &nucleons) {
     EventInitialState::nucleons = nucleons;
   }
-  void Clear(Option_t* = "") override {
+  void Clear(Option_t* = "") {
     id=0;
     nucleons.clear();
     nColl=0;

@@ -70,7 +70,7 @@ public:
     isSpectator = false;
   }
 
-  void Clear(Option_t* = "") override {
+  void Clear(Option_t* = "") {
     id=0;
     pdgId=-1;
     momentum.SetXYZT(0, 0, 0, 999);
@@ -84,8 +84,6 @@ private:
   IdType id;
 
   int pdgId{-1};
-
-
 
   TLorentzVector momentum{0, 0, 0, 999};
   TLorentzVector position{0, 0, 0, 999};

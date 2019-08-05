@@ -76,17 +76,20 @@ void convertUrQMD(TString inputFileName = "test.f20", TString outputFileName = "
   replace(linestr.begin(), linestr.end(), ',', ' ');
   istringstream iss(linestr);
   iss >> aProj >> zProj >> charDust >> aTarg >> zTarg >> charDust >> eBeam;
-  cout << linestr << endl;
-  cout << zProj << "\t" << aProj << "\t" << charDust << "\t" << zTarg << "\t" << aTarg << "\t" << charDust << "\t"
-       << eBeam << "\t" << endl;
+  //  cout << linestr << endl;
+  //  cout << zProj << "\t" << aProj << "\t" << charDust << "\t" << zTarg << "\t" << aTarg << "\t" << charDust << "\t"
+  //       << eBeam << "\t" << endl;
 
   int nNucl = aProj + aTarg;
   pProj = sqrt((eBeam + mProton) * (eBeam + mProton) - mProton * mProton);
-  pTarg = 0.;
+  Double_t eFull = eBeam + mProton;
+  Double_t pc = sqrt(0.5 * (mProton * eFull - mProton * mProton));
+  pProj = pc;
+  pTarg = -pc;
 
   URun *header = new URun(generator.c_str(), comment, aProj, zProj, pProj, aTarg, zTarg, pTarg, bMin, bMax, bWeight,
                           phiMin, phiMax, sigma, iEvent);
-  cout << header->GetNNSqrtS() << endl;
+  //  cout << header->GetNNSqrtS() << endl;
   header->Dump();
   while(inputFile)
   {
@@ -153,31 +156,31 @@ void convertUrQMD(TString inputFileName = "test.f20", TString outputFileName = "
         // << id << "\t" << id2 << endl;
         if(id <= nNucl && id2 <= nNucl)  // scattering between primary nucleons
         {
-          //        cout << linestr << endl;
-          //        cout << "\t" << id << "\t" << pdg << "\t" << numDust << "\t" << px << "\t" << py << "\t" << pz <<
-          //        "\t" << e
-          //             << "\t" << m << "\t" << x << "\t" << y << "\t" << z << "\t" << t << "\t" << endl;
-
           nColl++;
           // add collided nucleon to index array
           TLorentzVector position;
-          iniState->getNucleon(id).addCollidedNucleonIndex(id2);
-          iniState->getNucleon(id2).addCollidedNucleonIndex(id);
           // update information on coordinates and momenta
           if(iniState->getNucleon(id).isSpect())
-          {
-            iss3 >> id >> pdg >> numDust >> px >> py >> pz >> e >> m >> x >> y >> z >> t;
-            position.SetXYZT(x, y, z, t);
-            iniState->getNucleon(id).setPosition(position);
             nPart++;
-          }
           if(iniState->getNucleon(id2).isSpect())
-          {
-            iss4 >> id >> pdg >> numDust >> px >> py >> pz >> e >> m >> x >> y >> z >> t;
-            position.SetXYZT(x, y, z, t);
-            iniState->getNucleon(id).setPosition(position);
             nPart++;
-          }
+          
+          iniState->getNucleon(id2).addCollidedNucleonIndex(id);
+          iniState->getNucleon(id).addCollidedNucleonIndex(id2);
+
+          iss3 >> pdg >> numDust >> px >> py >> pz >> e >> m >> x >> y >> z >> t;
+          position.SetXYZT(x, y, z, t);
+          iniState->getNucleon(id).setPosition(position);
+/*          cout << linestr << endl;
+          cout << "\t" << id << "\t" << pdg << "\t" << numDust << "\t" << px << "\t" << py << "\t" << pz << "\t" << e
+               << "\t" << m << "\t" << x << "\t" << y << "\t" << z << "\t" << t << "\t" << endl;*/
+          
+          iss4 >> pdg >> numDust >> px >> py >> pz >> e >> m >> x >> y >> z >> t;
+          position.SetXYZT(x, y, z, t);
+          iniState->getNucleon(id).setPosition(position);
+//          cout << linestr << endl;
+//          cout << "\t" << id2 << "\t" << pdg << "\t" << numDust << "\t" << px << "\t" << py << "\t" << pz << "\t" << e
+//               << "\t" << m << "\t" << x << "\t" << y << "\t" << z << "\t" << t << "\t" << endl;
         }
       }
       // Skip the lines corresponding to collision products
