@@ -2,9 +2,9 @@ R__LOAD_LIBRARY(libMcIniData.so)
 
 using namespace std;
 
-void demo()
+void demo(TString inputFileName="test.root")
 {
-  TFile *fIn = new TFile("test.root", "read");
+  TFile *fIn = new TFile(inputFileName, "read");
   URun *run = (URun *)fIn->Get("run");
   float sqrtSnn = run->GetNNSqrtS();
   int aProj = run->GetAProj();
