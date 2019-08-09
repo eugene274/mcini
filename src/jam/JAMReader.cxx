@@ -122,7 +122,9 @@ void particlePostProcess() {
 void previousEventPostProcess() {
   getEntity<UEvent>()->Print();
 
-  gEventTree->Fill();
+  if (getEntity<EventInitialState>()->getNColl() != 0) {
+    gEventTree->Fill();
+  }
 
 }
 
