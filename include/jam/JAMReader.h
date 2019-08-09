@@ -17,14 +17,9 @@ enum class EParseStatus : ushort {
 
 };
 
-template<typename ... Elem>
-using tuple_with_pointers = std::tuple<std::shared_ptr<Elem>...>;
-
 template<typename T>
 T *getEntity() {
-  static tuple_with_pointers<URun, UEvent, UParticle, EventInitialState> dataModel;
-
-  auto &entityPtr = std::get<std::shared_ptr<T>>(dataModel);
+  static std::shared_ptr<T> entityPtr{};
 
   if (!entityPtr) {
     entityPtr.reset(new T);
