@@ -12,7 +12,7 @@
 
 using namespace std;
 
-EParseStatus parseJAMRunInfo(const string &pathToJAMRunInfo, URun& runHeader) {
+EParseStatus parseJAMRunInfo(const string &pathToJAMRunInfo) {
   cout << __func__ << endl;
 
   unsigned int aTarg{0};
@@ -127,7 +127,7 @@ EParseStatus parseJAMRunInfo(const string &pathToJAMRunInfo, URun& runHeader) {
     parseStatus_ = EParseStatus::kMalformedInput;
   }
 
-  runHeader = URun(
+  *getEntity<URun>() = URun(
       "JAM", "",
       aProj, zProj, pZProj,
       aTarg, zTarg, pZTarg,
@@ -139,9 +139,3 @@ EParseStatus parseJAMRunInfo(const string &pathToJAMRunInfo, URun& runHeader) {
   return parseStatus_;
 }
 
-// for the internal tests only
-int main(int argc, char **argv) {
-
-
-  return 0;
-}

@@ -41,12 +41,19 @@ public:
   void setNucleons(const std::vector<Nucleon> &nucleons) {
     EventInitialState::nucleons = nucleons;
   }
+
+
+  void clear() {
+    Clear();
+  }
+
   void Clear(Option_t* = "") {
     id=0;
     nucleons.clear();
     nColl=0;
     nPart=0;
   }
+
   void addNucleon (Nucleon &nucleon) {
     nucleons.push_back(nucleon);
   }
