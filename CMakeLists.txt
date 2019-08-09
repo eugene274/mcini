@@ -4,7 +4,7 @@ project(McIniData)
 find_package(ROOT REQUIRED)
 include(${ROOT_USE_FILE})
 
-include_directories(include)
+include_directories(include ${CMAKE_SOURCE_DIR})
 
 ROOT_GENERATE_DICTIONARY(
         G__McIniData include/Nucleon.h include/EventInitialState.h include/URun.h include/UEvent.h include/UParticle.h 
