@@ -11,12 +11,8 @@ ROOT_GENERATE_DICTIONARY(
         LINKDEF include/MCIni-LinkDef.h
 )
 
-add_library(McIniData SHARED G__McIniData src/URun.cxx src/UEvent.cxx src/UParticle.cxx src/Nucleon.cxx src/EventInitialState.cxx include/MCIni-LinkDef.h)
+add_library(McIniData SHARED G__McIniData.cxx src/URun.cxx src/UEvent.cxx src/UParticle.cxx src/Nucleon.cxx src/EventInitialState.cxx)
 target_link_libraries(McIniData PRIVATE ${ROOT_LIBRARIES})
 
-add_library(BaseConverter STATIC src/BaseConverter.cxx include/BaseConverter.h)
-target_link_libraries(BaseConverter PRIVATE ${ROOT_LIBRARIES})
-target_link_libraries(BaseConverter PUBLIC McIniData)
-
 add_executable(JAMReader src/jam/JAMRunInfo.cxx)
-target_link_libraries(JAMReader PRIVATE BaseConverter)
+target_link_libraries(JAMReader PUBLIC McIniData ${ROOT_LIBRARIES})

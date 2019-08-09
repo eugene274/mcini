@@ -7,38 +7,36 @@
 #include <iostream>
 #include <regex>
 
-enum class EParseStatus {
-  kNotYetParsed,
-  kNoInputFile,
-  kMalformedInput,
-  kSuccess
-};
-
-struct JAMRunInfo_st {
-
-  unsigned int aTarg_{0};
-  unsigned int aProj_{0};
-  unsigned int zTarg_{0};
-  unsigned int zProj_{0};
-
-  float pZTarg_{0.};
-  float pZProj_{0.};
-
-  EParseStatus parseStatus_{EParseStatus::kNotYetParsed};
-};
+#include <jam/JAMReader.h>
+#include <URun.h>
 
 using namespace std;
 
-JAMRunInfo_st parseJAMRunInfo(const string &pathToJAMRunInfo) {
+EParseStatus parseJAMRunInfo(const string &pathToJAMRunInfo, URun& runHeader) {
   cout << __func__ << endl;
-  JAMRunInfo_st parseResult{};
+
+  unsigned int aTarg{0};
+  unsigned int aProj{0};
+  unsigned int zTarg{0};
+  unsigned int zProj{0};
+
+  float pZTarg{0.};
+  float pZProj{0.};
+
+  float bMin{0.};
+  float bMax{0.};
+
+  unsigned int nEvents{0};
+
+  EParseStatus parseStatus_{EParseStatus::kNotInitialized};
+
 
   ifstream jamRunInfoIF(pathToJAMRunInfo);
 
   if (!jamRunInfoIF.is_open()) {
     cerr << "File '" << pathToJAMRunInfo << "' is not available" << endl;
-    parseResult.parseStatus_ = EParseStatus::kNoInputFile;
-    return parseResult;
+    parseStatus_ = EParseStatus::kNoInputFile;
+    return parseStatus_;
   }
 
   const regex regexAZTargAndProj(R"(mass (\d+)\( *(\d+), *\d+\) ==> mass (\d+)\( *(\d+), *\d+\))");
@@ -50,57 +48,100 @@ JAMRunInfo_st parseJAMRunInfo(const string &pathToJAMRunInfo) {
   if (regex_search(inputBuffer, matchResults, regexAZTargAndProj)) {
     if (matchResults.size() == 5) {
       try {
-        parseResult.aProj_ = stoi(matchResults.str(1));
-        parseResult.zProj_ = stoi(matchResults.str(2));
-        parseResult.aTarg_ = stoi(matchResults.str(3));
-        parseResult.zTarg_ = stoi(matchResults.str(4));
+        aProj = stoi(matchResults.str(1));
+        zProj = stoi(matchResults.str(2));
+        aTarg = stoi(matchResults.str(3));
+        zTarg = stoi(matchResults.str(4));
 
-        cout << "Collision (" << parseResult.aProj_ << "," << parseResult.zProj_ << ") ==> (" << parseResult.aTarg_ << ","
-             << parseResult.zTarg_ << ")" << endl;
+        cout << "Collision (" << aProj << "," << zProj << ") ==> (" << aTarg << ","
+             << zTarg << ")" << endl;
 
-        parseResult.parseStatus_ = EParseStatus::kSuccess;
+        parseStatus_ = EParseStatus::kSuccess;
       } catch (invalid_argument& e) {
         cerr << e.what() << endl;
-        parseResult.parseStatus_ = EParseStatus::kMalformedInput;
+        parseStatus_ = EParseStatus::kMalformedInput;
       }
     } else {
-      parseResult.parseStatus_ = EParseStatus::kMalformedInput;
+      parseStatus_ = EParseStatus::kMalformedInput;
     }
   } else {
-    parseResult.parseStatus_ = EParseStatus::kMalformedInput;
+    parseStatus_ = EParseStatus::kMalformedInput;
   }
 
-  if (parseResult.parseStatus_ != EParseStatus::kSuccess) {
-    return parseResult;
+  if (parseStatus_ != EParseStatus::kSuccess) {
+    return parseStatus_;
   }
 
   const regex regexPzTargAndProj(R"(p_z\S+\s*([\d\.-]+)\s+([\d\.-]+))");
   if (regex_search(inputBuffer, matchResults, regexPzTargAndProj)) {
     if (matchResults.size() == 3) {
       try {
-        parseResult.pZProj_ = stof(matchResults.str(1));
-        parseResult.pZTarg_ = stof(matchResults.str(2));
+        pZProj = stof(matchResults.str(1));
+        pZTarg = stof(matchResults.str(2));
 
-        cout << "pZ (Proj) = " << parseResult.pZProj_ << " (A GeV/c) " << "pZ (Targ) = " << parseResult.pZTarg_
+        cout << "pZ (Proj) = " << pZProj << " (A GeV/c) " << "pZ (Targ) = " << pZTarg
              << " (A GeV/c)" << endl;
 
-        parseResult.parseStatus_ = EParseStatus::kSuccess;
+        parseStatus_ = EParseStatus::kSuccess;
       } catch (invalid_argument &e) {
         cerr << e.what() << endl;
-        parseResult.parseStatus_ = EParseStatus::kMalformedInput;
+        parseStatus_ = EParseStatus::kMalformedInput;
       }
     } else {
-      parseResult.parseStatus_ = EParseStatus::kMalformedInput;
+      parseStatus_ = EParseStatus::kMalformedInput;
     }
   }
 
-  return parseResult;
+  if (parseStatus_ != EParseStatus::kSuccess) {
+    return parseStatus_;
+  }
+
+  const regex regexImpactParameter(R"(([\d\.-]+) +< b < +([\d\.-]+) \(fm\))");
+  if (regex_search(inputBuffer, matchResults, regexImpactParameter)) {
+    if (matchResults.size() == 3) {
+      bMin = stof(matchResults.str(1));
+      bMax = stof(matchResults.str(2));
+
+      parseStatus_ = EParseStatus::kSuccess;
+    } else {
+      parseStatus_ = EParseStatus::kMalformedInput;
+    }
+  } else {
+    parseStatus_ = EParseStatus::kMalformedInput;
+  }
+
+  if (parseStatus_ != EParseStatus::kSuccess) {
+    return parseStatus_;
+  }
+
+  const regex regexNEvents(R"(# of event\s+=\s+(\d+))");
+  if (regex_search(inputBuffer, matchResults, regexNEvents)) {
+    if (matchResults.size() == 2) {
+      nEvents = stoi(matchResults.str(1));
+
+      parseStatus_ = EParseStatus::kSuccess;
+    } else {
+      parseStatus_ = EParseStatus::kMalformedInput;
+    }
+  } else {
+    parseStatus_ = EParseStatus::kMalformedInput;
+  }
+
+  runHeader = URun(
+      "JAM", "",
+      aProj, zProj, pZProj,
+      aTarg, zTarg, pZTarg,
+      bMin, bMax, 0,
+      0., 0., 0,
+      nEvents
+      );
+
+  return parseStatus_;
 }
 
 // for the internal tests only
 int main(int argc, char **argv) {
 
-  parseJAMRunInfo(argv[1]);
 
   return 0;
 }

@@ -1,0 +1,142 @@
+
+
+          **************************************************
+          *                                                *
+          *         Jet xc has been initialized at         *
+          *             nn =       4.86 GeV/A              *
+          *                                                *
+          *     for 197Au  (197, 79) + 197Au  (197, 79)    *
+          **************************************************
+                                                                               
+ ******************************************************************************
+ ******************************************************************************
+ **                                                                          **
+ **                                                                          **
+ **   Welcome to the JAM Monte Carlo!                                        **
+ **                                                                          **
+ **   JJJJJJJJ  AAAA      MM     MMM                                         **
+ **      JJ    AA  AA     MMM    MMM                                         **
+ **      JJ   AAAAAAAA    MM MMMM MM                                         **
+ **   J  JJ  AA      AA   MM      MM                                         **
+ **   JJJJJ AA        AA  MM      MM                                         **
+ **                                                                          **
+ **    This is JAM  version 1.904                                            **
+ **  Last date of change:  9 Oct 2018                                        **
+ **                                                                          **
+ **                                                                          **
+ **                                                                          **
+ **  JAM is a free software which can                                        **
+ **  be distributed under the GNU Gen                                        **
+ **  eral Public License. There is no                                        **
+ **  warranty for the program.                                               **
+ **                                                                          **
+ **  Copyright (c) 1998 Yasushi Nara                                         **
+ **                                                                          **
+ **  Main author: Yasushi Nara;                                              **
+ **  Advance Science Research Center, Japan Atomic Energy Research Institute **
+ **  Tokai-mura, Naka-gun, Ibaraki-ken  319-1195, Japan                      **
+ **  e-mail: nara@aiu.ac.jp                                                  **
+ **                                                                          **
+ **                                                                          **
+ **                                                                          **
+ ******************************************************************************
+ ******************************************************************************
+
+
+      *******************************************************************
+      *                                                                 *
+      *          Reaction:                                              *
+      *                                                                 *
+      *              mass 197( 79,118) ==> mass 197( 79,118)            *
+      *                                                                 *
+      *              Collision of 197Au   on 197Au                      *
+      *                                                                 *
+      *                                                                 *
+      *               Beam energy   =     10.70 A GeV                   *
+      *               Beam momentum =     11.60 A GeV/c                 *
+      *               C.M. energy   =      4.86 A GeV                   *
+      *                                                                 *
+      *                               Beam        Target                *
+      *          Velocity/c:       0.9223354     -.9223354              *
+      *          Gamma factor:       2.588         2.588                *
+      *          p_x(GeV/c):         0.000         0.000                *
+      *          p_z(GeV/c):         2.241        -2.241                *
+      *          r_x(fm):            0.000         0.000                *
+      *          r_z(fm):           -2.569         2.569                *
+      *          ylab yproj:         1.604         1.604                *
+      *                                                                 *
+      *        Impact parameters are distributed according to b^2:      *
+      *                    0.000 < b <     3.400 (fm)                   *
+      *                                                                 *
+      *******************************************************************
+
+
+
+      * Input output file name: "jam.cfg        "
+      * Computational frame: nucl.-nucl. c.m.
+      * Random seed     =    114231
+      * # of event      =    100
+      * Time step size  =  0.150 fm/c
+      * # of timestep   =    200
+
+
+      * mstc(6) =     0 Simulation mode = Cascade mode  mstc(106)=14
+
+
+                           per simulation    100 runs       1 parallel runs
+      -----------------------------------
+       Total collisions      =  4087.4000
+       Elastic collisions    =  1115.8500
+       Inelastic collisions  =  2971.5500
+       Absorptions           =  1158.3400
+       baryon-baryon coll.   =  1680.8100
+       meson-baryon coll.    =  1997.2100
+       meson-meson coll.     =   409.1300
+       anti-B-B coll.        =     0.2500
+       hadron-parton coll.   =     0.0000
+       parton-parton coll.   =     0.0000
+       Resonance decays      =  1629.5000
+       Total particles       =   926.6500
+       Mesons                =   532.6500
+       Pauli blocks          =    45.6200
+       Blocks due to E.con.  =     0.0000
+       Low energy cuts       = 0.5619E+05
+       Decay after simul.    =    31.8700
+       Mean formation time          =     0.7433   14.4300
+       Mean const. formation time   =     0.9737  270.0800
+
+
+       average number of jet=    0.0000
+       max. number of nv=     2385
+       max. number of mentry=     2117
+       # of coll produced strangeness            =   31.5100
+       # of coll produced strangeness(const.q)   =    0.0000     0.0000%
+       # of string decay  produced strangeness   =   21.8700
+       # of resonance decay  produced strangeness=   25.9500    45.7340%
+
+
+ ==============================================================================
+          FINAL HADRON MULTIPLICITIES
+ ==============================================================================
+
+ total particle   926.64999999999998     
+ charged particle   518.86000000000001     
+ negative particle   180.43000000000001     
+ positive particle   338.43000000000001     
+   22        22  gamma                 1.88    
+  132       111  pi0                   163.    
+  133       211  pi+                   148.      pi-                   173.    
+  153       221  eta                   14.6    
+  173       311  K0                    13.6      Kbar0                 2.61    
+  174       321  K+                    12.4      K-                    3.11    
+  252      2112  n0                    200.      nbar0                 0.00    
+  253      2212  p+                    175.      pbar-                 0.00    
+  314      3122  Lambda0               9.91      Lambdabar0            0.00    
+  327      3112  Sigma-                3.80      Sigmabar+             0.00    
+  328      3212  Sigma0                2.61      Sigmabar0             0.00    
+  329      3222  Sigma+                3.03      Sigmabar-             0.00    
+  354      3312  Xi-                  0.250      Xibar+                0.00    
+  355      3322  Xi0                  0.230      Xibar0                0.00    
+
+      * CPU time=   0 h   6 m  10 s
+      *******************************
