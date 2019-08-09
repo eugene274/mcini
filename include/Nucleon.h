@@ -56,7 +56,7 @@ public:
   bool isSpect() const {
     return isSpectator;
   }
-  void setIsSpectator(bool isSpectator) {
+  void setIsSpectator(bool isSpectator=true) {
     Nucleon::isSpectator = isSpectator;
   }
   const std::vector<IdType> &getCollidedNucleonIndices() const {
@@ -67,7 +67,6 @@ public:
   }
   void addCollidedNucleonIndex(int index) {
     collidedNucleonIndices.push_back(index);
-    isSpectator = false;
   }
 
   void Clear(Option_t* = "") {

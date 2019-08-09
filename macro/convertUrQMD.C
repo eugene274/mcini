@@ -6,9 +6,9 @@
 #include "TString.h"
 #include "TTree.h"
 
-#include "../include/URun.h"
-#include "../include/UEvent.h"
 #include "../include/EventInitialState.h"
+#include "../include/UEvent.h"
+#include "../include/URun.h"
 
 R__LOAD_LIBRARY(libMcIniData.so)
 
@@ -26,7 +26,7 @@ void convertUrQMD(TString inputFileName = "test.f20", TString outputFileName = "
   double pProj, pTarg, eBeam;
   double phi, b, numDust, px, py, pz, e, m, x, y, z, t;
   string charDust;
-  int id, id2, pdg, iEvent, nColl, nPart;
+  int id, id2, id3, id4, pdg, iEvent, nColl, nPart;
   int nes = 0;
   int stepNr = 0;
   double stepT = 0;
@@ -77,13 +77,12 @@ void convertUrQMD(TString inputFileName = "test.f20", TString outputFileName = "
   //       << eBeam << "\t" << endl;
 
   int nNucl = aProj + aTarg;
-//  pProj = sqrt(0.5 * (mProton * (eBeam + mProton) - mProton * mProton));
   pProj = sqrt(0.5 * mProton * eBeam);
   pTarg = -pProj;
 
   URun *header = new URun(generator.c_str(), comment, aProj, zProj, pProj, aTarg, zTarg, pTarg, bMin, bMax, bWeight,
                           phiMin, phiMax, sigma, iEvent);
-//  cout << header->GetNNSqrtS() << endl;
+  //  cout << header->GetNNSqrtS() << endl;
   header->Dump();
   while(inputFile)
   {
@@ -119,7 +118,7 @@ void convertUrQMD(TString inputFileName = "test.f20", TString outputFileName = "
       TLorentzVector momentum(px, py, pz, e);
       TLorentzVector position(x, y, z, t);
       Nucleon nucleon;
-      nucleon.setId(iNucl);
+      nucleon.setId(iNucl+1);
       nucleon.setPdgId(pdg);
       nucleon.setMomentum(momentum);
       nucleon.setPosition(position);
@@ -133,63 +132,92 @@ void convertUrQMD(TString inputFileName = "test.f20", TString outputFileName = "
       getline(inputFile, linestr);
       istringstream iss2(linestr);
       iss2 >> nIn >> nOut >> processType;
-      //      cout << linestr << endl;
-      //      cout << nIn << "\t" << nOut << "\t" << processType << endl;
+      // cout << linestr << endl;
+      // cout << nIn << "\t" << nOut << "\t" << processType << endl;
       if(processType == -1)  // end of initial state block
         break;
-      getline(inputFile, linestr);
       // cout << linestr << endl;
-      if(nIn == 2)
+      if(nIn == 2 && nOut >= 2)
       {
+        getline(inputFile, linestr);
         istringstream iss3(linestr);
         iss3 >> id;
         getline(inputFile, linestr);
-        // cout << linestr << endl;
         istringstream iss4(linestr);
         iss4 >> id2;
-        // << id << "\t" << id2 << endl;
+        getline(inputFile, linestr);
+        istringstream iss5(linestr);
+        iss5 >> id3;
+        getline(inputFile, linestr);
+        istringstream iss6(linestr);
+        iss6 >> id4;
+
+        // cout << id << "\t" << id2 << "\t" << id3 << "\t" << id4 << endl;
+        TLorentzVector position;
+        TLorentzVector momentum;
         if(id <= nNucl && id2 <= nNucl)  // scattering between primary nucleons
         {
           nColl++;
           // add collided nucleon to index array
-          TLorentzVector position;
           // update information on coordinates and momenta
           if(iniState->getNucleon(id).isSpect())
             nPart++;
           if(iniState->getNucleon(id2).isSpect())
             nPart++;
-          
+
           iniState->getNucleon(id2).addCollidedNucleonIndex(id);
           iniState->getNucleon(id).addCollidedNucleonIndex(id2);
 
           iss3 >> pdg >> numDust >> px >> py >> pz >> e >> m >> x >> y >> z >> t;
           position.SetXYZT(x, y, z, t);
+          momentum.SetPxPyPzE(px, py, pz, e);
           iniState->getNucleon(id).setPosition(position);
-/*          cout << linestr << endl;
-          cout << "\t" << id << "\t" << pdg << "\t" << numDust << "\t" << px << "\t" << py << "\t" << pz << "\t" << e
-               << "\t" << m << "\t" << x << "\t" << y << "\t" << z << "\t" << t << "\t" << endl;*/
-          
+          iniState->getNucleon(id).setMomentum(momentum);
+          /*          cout << linestr << endl;
+                    cout << "\t" << id << "\t" << pdg << "\t" << numDust << "\t" << px << "\t" << py << "\t" << pz <<
+             "\t" << e
+                         << "\t" << m << "\t" << x << "\t" << y << "\t" << z << "\t" << t << "\t" << endl;*/
+
           iss4 >> pdg >> numDust >> px >> py >> pz >> e >> m >> x >> y >> z >> t;
           position.SetXYZT(x, y, z, t);
-          iniState->getNucleon(id).setPosition(position);
-//          cout << linestr << endl;
-//          cout << "\t" << id2 << "\t" << pdg << "\t" << numDust << "\t" << px << "\t" << py << "\t" << pz << "\t" << e
-//               << "\t" << m << "\t" << x << "\t" << y << "\t" << z << "\t" << t << "\t" << endl;
+          momentum.SetPxPyPzE(px, py, pz, e);
+          iniState->getNucleon(id2).setPosition(position);
+          iniState->getNucleon(id2).setMomentum(momentum);
+          //          cout << linestr << endl;
+          //          cout << "\t" << id2 << "\t" << pdg << "\t" << numDust << "\t" << px << "\t" << py << "\t" << pz <<
+          //          "\t" << e
+          //               << "\t" << m << "\t" << x << "\t" << y << "\t" << z << "\t" << t << "\t" << endl;
+          if(id == id3)
+          {
+            iss5 >> pdg >> numDust >> px >> py >> pz >> e >> m >> x >> y >> z >> t;
+            momentum.SetPxPyPzE(px, py, pz, e);
+            iniState->getNucleon(id).setMomentum(momentum);
+          }
+          else
+            iniState->getNucleon(id).setIsSpectator(false);
+          if(id2 == id4)
+          {
+            iss6 >> pdg >> numDust >> px >> py >> pz >> e >> m >> x >> y >> z >> t;
+            momentum.SetPxPyPzE(px, py, pz, e);
+            iniState->getNucleon(id2).setMomentum(momentum);
+          }
+          else
+            iniState->getNucleon(id2).setIsSpectator(false);
         }
+        for(int i = 0; i < nOut - 2; i++)
+          getline(inputFile, linestr);
       }
       // Skip the lines corresponding to collision products
-      for(int i = 0; i < nOut; i++)
-      {
-        getline(inputFile, linestr);
-        //        cout << linestr << endl;
-      }
+      else
+        for(int i = 0; i < nIn + nOut; i++)
+          getline(inputFile, linestr);
     }
     iniState->setNColl(nColl);
     iniState->setNPart(nPart);
 
     // Identify final-state particles and store them
     //    cout << linestr << endl;
-    //    cout << nIn << endl;
+    //    cout << nIn << "\t" << nOut << endl;
     if(nIn > 0 && nOut == 0)
     {
       for(int i = 0; i < nIn; i++)
@@ -203,9 +231,9 @@ void convertUrQMD(TString inputFileName = "test.f20", TString outputFileName = "
         double weight = 1.;
 
         std::getline(inputFile, linestr);
-        istringstream iss5(linestr);
-        iss5 >> id >> pdg >> numDust >> px >> py >> pz >> e >> m >> x >> y >> z >> t;
-        //        cout << linestr << endl;
+        istringstream iss7(linestr);
+        iss7 >> id >> pdg >> numDust >> px >> py >> pz >> e >> m >> x >> y >> z >> t;
+        //                cout << linestr << endl;
         //        cout << "\t" << id << "\t" << pdg << "\t" << numDust << "\t" << px << "\t" << py << "\t" << pz << "\t"
         //        << e
         //             << "\t" << m << "\t" << x << "\t" << y << "\t" << z << "\t" << t << "\t" << endl;
@@ -214,6 +242,7 @@ void convertUrQMD(TString inputFileName = "test.f20", TString outputFileName = "
         event->AddParticle(id, pdg, status, parent, parentDecay, mate, decay, child, momentum, position, weight);
       }
     }
+    if (iEvent == 8) cout << iEvent << "\t" << iniState->getNucleon(200).getId() << "\t" << iniState->getNucleon(201).isSpect() << "\t" << iniState->getNucleon(201).getMomentum().Pz() << endl;
     if(event->GetNpa() > nNucl)
       tree->Fill();
     getline(inputFile, linestr);
