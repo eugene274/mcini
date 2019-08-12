@@ -57,6 +57,11 @@ public:
   void addNucleon (Nucleon &nucleon) {
     nucleons.push_back(nucleon);
   }
+  
+  void setNucleon (Nucleon &nucleon) {
+    nucleons.at(nucleon.getId()-1) = nucleon;
+  }
+  
   Nucleon &getNucleon (int id) {
     return nucleons.at(id-1);
   }

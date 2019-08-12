@@ -25,7 +25,7 @@ void demo(TString inputFileName="test.root")
     for(auto nucleon : nucleons)
     {
       TLorentzVector position = nucleon.getPosition();
-      if(!nucleon.isSpect())
+      if(nucleon.getCollisionType()==3 || nucleon.getCollisionType()==4)
         h2Part->Fill(position.X(), position.Y());
     }
     for(int iPart = 0; iPart < event->GetNpa(); iPart++)

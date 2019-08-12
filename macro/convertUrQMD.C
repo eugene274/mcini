@@ -1,3 +1,9 @@
+// 1. Participants - position and momentum in the last collision
+// 2. Spectators - position and momentum in the first collision
+// 3. Ncoll - number of inelastic collisions between nucleons and all their ancestors till 50% of the initial nucleon
+// energy is dissipated - to be done. Meanwhile any inelastic scattering of nucleon (x2 if one of its ancestors is
+// carrying 90% of its energy).
+
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -14,243 +20,314 @@ R__LOAD_LIBRARY(libMcIniData.so)
 
 using namespace std;
 
-void convertUrQMD(TString inputFileName = "test.f20", TString outputFileName = "test.root")
+enum eCollisionVariables
 {
-  bool parse_verbosity{true};
-  double mProton = 0.938272029;
+  kNin = 0,
+  kNout,
+  kEventId,
+  kB,
+  kPhi,
+  kCollisionVars
+};
 
+enum eParticleVariables
+{
+  kIndex = 0,
+  kPdg,
+  kPx,
+  kPy,
+  kPz,
+  kE,
+  kM,
+  kX,
+  kY,
+  kZ,
+  kT,
+  kNparticleVars
+};
+
+unsigned int nWordsIn(const std::string &str)
+{
+  std::stringstream stream(str);
+  std::string word;
+  unsigned int words = 0;
+  while(stream >> word)
+  {
+    ++words;
+  }
+  return words;
+}
+
+ifstream openFile(TString inputFileName)
+{
   ifstream inputFile;
-  string generator;
-  const char *comment = "";
-  int aProj, zProj, aTarg, zTarg;
-  double pProj, pTarg, eBeam;
-  double phi, b, numDust, px, py, pz, e, m, x, y, z, t;
-  string charDust;
-  int id, id2, id3, id4, pdg, iEvent, nColl, nPart;
-  int nes = 0;
-  int stepNr = 0;
-  double stepT = 0;
-  double bMin = 0;
-  double bMax = 20.0;
-  int bWeight = 0;
-  double phiMin = 0;
-  double phiMax = 0;
-  double sigma = 0;
-
   inputFile.open(inputFileName);
   if(!inputFile)
   {
     printf("File does not exist\n");
-    return;
+    assert(1);
   }
   else
   {
     cout << Form("--> Successfully opened file") << endl << endl;
   }
-  string linestr;
-  TFile *outputFile = new TFile(outputFileName, "recreate");
-  UEvent *event = new UEvent;
-  EventInitialState *iniState = new EventInitialState;
-  TTree *tree = new TTree("events", generator.c_str());
-  tree->Branch("iniState", "EventInitialState", iniState);
-  tree->Branch("event", "UEvent", event);
-
-  getline(inputFile, linestr);
-  if(linestr != "# OSC1999A")  // check if it is OSCAR1999A format
+  string line;
+  getline(inputFile, line);
+  if(line != "# OSC1999A")  // check if it is OSCAR1999A format
   {
     cout << "ERROR: Not an OSCAR1999A file!!!\n";
-    return;
+    assert(1);
   }
-  getline(inputFile, linestr);    // skip "# full_event_history"
+  return inputFile;
+}
+
+URun parseRunHeader(ifstream &inputFile)
+{
+  float mProton = 0.938272029;
+  string line, generator;
+  const char *comment = "";
+  int aProj, zProj, aTarg, zTarg, bWeight = 0;
+  string charDust;
+  float eBeam, bMin = 0, bMax = 20.0, phiMin = 0, phiMax = 0, sigma = 0, nEvents = 0;
+
+  getline(inputFile, line);       // skip "# full_event_history"
   getline(inputFile, generator);  // generator info
   generator.erase(0, 2);
 
-  getline(inputFile, linestr);  // colliding system
-  replace(linestr.begin(), linestr.end(), '#', ' ');
-  replace(linestr.begin(), linestr.end(), '(', ' ');
-  replace(linestr.begin(), linestr.end(), ')', ' ');
-  replace(linestr.begin(), linestr.end(), ',', ' ');
-  istringstream iss(linestr);
-  iss >> aProj >> zProj >> charDust >> aTarg >> zTarg >> charDust >> eBeam;
-  //  cout << linestr << endl;
-  //  cout << zProj << "\t" << aProj << "\t" << charDust << "\t" << zTarg << "\t" << aTarg << "\t" << charDust << "\t"
-  //       << eBeam << "\t" << endl;
+  getline(inputFile, line);  // colliding system
+  replace(line.begin(), line.end(), '#', ' ');
+  replace(line.begin(), line.end(), '(', ' ');
+  replace(line.begin(), line.end(), ')', ' ');
+  replace(line.begin(), line.end(), ',', ' ');
+  stringstream stream(line);
+  stream >> aProj >> zProj >> charDust >> aTarg >> zTarg >> charDust >> eBeam;
 
-  int nNucl = aProj + aTarg;
-  pProj = sqrt(0.5 * mProton * eBeam);
-  pTarg = -pProj;
+  float pProj = sqrt(0.5 * mProton * eBeam);
+  float pTarg = -pProj;
 
-  URun *header = new URun(generator.c_str(), comment, aProj, zProj, pProj, aTarg, zTarg, pTarg, bMin, bMax, bWeight,
-                          phiMin, phiMax, sigma, iEvent);
+  URun header(generator.c_str(), comment, aProj, zProj, pProj, aTarg, zTarg, pTarg, bMin, bMax, bWeight, phiMin, phiMax,
+              sigma, nEvents);
   //  cout << header->GetNNSqrtS() << endl;
-  header->Dump();
-  while(inputFile)
-  {
-    getline(inputFile, linestr);
-    istringstream iss1(linestr);
-    int nIn = 0, nOut = 0;
-    iss1 >> nIn >> nOut >> iEvent >> b >> phi;
-    //    cout << linestr << endl;
-    //    cout << "\t" << nIn << "\t" << nOut << "\t" << iEvent << "\t" << b << "\t" << phi << endl;
+  header.Print();
+  return header;
+}
 
-    // Find new event header
-    //    if(nIn == 0 && nOut == nNucl)
-    //    {
-    if(iEvent % 50 == 0)
-      cout << "Event # " << iEvent << "... \r" << flush;
+vector<float> parseCollisionHeader(const string &line)
+{
+  vector<float> var(kCollisionVars);
+  stringstream stream(line);
+  stream >> var[kNin] >> var[kNout] >> var[kEventId] >> var[kB] >> var[kPhi];
+  return var;
+}
+
+vector<float> parseParticleInfo(const string &line)
+{
+  vector<float> var(kNparticleVars);
+  float numDust;
+  stringstream stream(line);
+
+  stream >> var[kIndex] >> var[kPdg] >> numDust >> var[kPx] >> var[kPy] >> var[kPz] >> var[kE] >> var[kM] >> var[kX] >>
+      var[kY] >> var[kZ] >> var[kT];
+  return var;
+}
+
+Nucleon makeNucleon(const string &line)
+{
+  vector<float> var = parseParticleInfo(line);
+  TLorentzVector position(var[kX], var[kY], var[kZ], var[kT]);
+  TLorentzVector momentum(var[kPx], var[kPy], var[kPz], var[kE]);
+  Nucleon nucleon;
+  nucleon.setId(var[kIndex]);
+  nucleon.setPdgId(var[kPdg]);
+  nucleon.setPosition(position);
+  nucleon.setMomentum(momentum);
+  return nucleon;
+}
+
+UParticle makeParticle(const string &line)
+{
+  vector<float> var = parseParticleInfo(line);
+  TLorentzVector position(var[kX], var[kY], var[kZ], var[kT]);
+  TLorentzVector momentum(var[kPx], var[kPy], var[kPz], var[kE]);
+  int status = 0, parent = 0, parentDecay = 0, mate = 0, decay = 0, child[2] = {0, 0};
+  double weight = 1.;
+  UParticle particle(var[kIndex], var[kPdg], status, parent, parentDecay, mate, decay, child, momentum, position,
+                     weight);
+  return particle;
+}
+
+void convertUrQMD(TString inputFileName = "test.f20", TString outputFileName = "test.root")
+{
+  ifstream inputFile = openFile(inputFileName);
+  TFile *outputFile = new TFile(outputFileName, "recreate");
+  URun header = parseRunHeader(inputFile);
+  TString generator;
+  string line;
+  header.GetGenerator(generator);
+  UEvent *event = new UEvent;
+  EventInitialState *iniState = new EventInitialState;
+  TTree *tree = new TTree("events", generator);
+  tree->Branch("iniState", "EventInitialState", iniState);
+  tree->Branch("event", "UEvent", event);
+
+  int nNucl = header.GetAProj() + header.GetATarg();
+  int nColl, nPart, nIn, nOut, eventId;
+  float b, phi;
+  int nes = 0, stepNr = 0, stepT = 0;
+  while(inputFile)  // loop over events
+  {
+    getline(inputFile, line);
+    vector<float> eventInfo = parseCollisionHeader(line);
+    eventId = eventInfo.at(kEventId);
+    b = eventInfo.at(kB);
+    phi = eventInfo.at(kPhi);
+    if(eventId % 50 == 0)
+      cout << "Event # " << eventId << "... \r" << flush;
     event->Clear();
     iniState->Clear();
-    event->SetParameters(iEvent, b, phi, nes, stepNr, stepT);
-    iniState->setId(iEvent);
+    event->SetParameters(eventId, b, phi, nes, stepNr, stepT);
+    iniState->setId(eventId);
     nColl = 0;
     nPart = 0;
-
     // Parse initial nucleon info
     for(int iNucl = 0; iNucl < nNucl; iNucl++)
     {
-      getline(inputFile, linestr);
-      istringstream iss2(linestr);
-      iss2 >> id >> pdg >> numDust >> px >> py >> pz >> e >> m >> x >> y >> z >> t;
-      //        cout << linestr << endl;
-      //        cout << "\t" << id << "\t" << pdg << "\t" << numDust << "\t" << px << "\t" << py << "\t" << pz << "\t"
-      //        << e << "\t"
-      //             << m << "\t" << x << "\t" << y << "\t" << z << "\t" << t << "\t" << endl;
-      TLorentzVector momentum(px, py, pz, e);
-      TLorentzVector position(x, y, z, t);
-      Nucleon nucleon;
-      nucleon.setId(iNucl+1);
-      nucleon.setPdgId(pdg);
-      nucleon.setMomentum(momentum);
-      nucleon.setPosition(position);
+      getline(inputFile, line);
+      Nucleon nucleon = makeNucleon(line);
       iniState->addNucleon(nucleon);
     }
 
-    // Find collision header in the current event for 2 -> many scatterings
-    while(inputFile)
+    while(inputFile)  // loop over collisions in event
     {
-      int processType = -1;
-      getline(inputFile, linestr);
-      istringstream iss2(linestr);
-      iss2 >> nIn >> nOut >> processType;
-      // cout << linestr << endl;
-      // cout << nIn << "\t" << nOut << "\t" << processType << endl;
-      if(processType == -1)  // end of initial state block
+      getline(inputFile, line);
+      vector<float> collisionInfo = parseCollisionHeader(line);
+      nIn = collisionInfo.at(kNin);
+      nOut = collisionInfo.at(kNout);
+      if(nWordsIn(line) == 2)  // beginning of final state block or end of event
         break;
-      // cout << linestr << endl;
-      if(nIn == 2 && nOut >= 2)
+      vector<vector<float>> inParticleInfo, outParticleInfo;
+      for(int iIn = 0; iIn < nIn; iIn++)
       {
-        getline(inputFile, linestr);
-        istringstream iss3(linestr);
-        iss3 >> id;
-        getline(inputFile, linestr);
-        istringstream iss4(linestr);
-        iss4 >> id2;
-        getline(inputFile, linestr);
-        istringstream iss5(linestr);
-        iss5 >> id3;
-        getline(inputFile, linestr);
-        istringstream iss6(linestr);
-        iss6 >> id4;
-
-        // cout << id << "\t" << id2 << "\t" << id3 << "\t" << id4 << endl;
-        TLorentzVector position;
-        TLorentzVector momentum;
-        if(id <= nNucl && id2 <= nNucl)  // scattering between primary nucleons
-        {
-          nColl++;
-          // add collided nucleon to index array
-          // update information on coordinates and momenta
-          if(iniState->getNucleon(id).isSpect())
-            nPart++;
-          if(iniState->getNucleon(id2).isSpect())
-            nPart++;
-
-          iniState->getNucleon(id2).addCollidedNucleonIndex(id);
-          iniState->getNucleon(id).addCollidedNucleonIndex(id2);
-
-          iss3 >> pdg >> numDust >> px >> py >> pz >> e >> m >> x >> y >> z >> t;
-          position.SetXYZT(x, y, z, t);
-          momentum.SetPxPyPzE(px, py, pz, e);
-          iniState->getNucleon(id).setPosition(position);
-          iniState->getNucleon(id).setMomentum(momentum);
-          /*          cout << linestr << endl;
-                    cout << "\t" << id << "\t" << pdg << "\t" << numDust << "\t" << px << "\t" << py << "\t" << pz <<
-             "\t" << e
-                         << "\t" << m << "\t" << x << "\t" << y << "\t" << z << "\t" << t << "\t" << endl;*/
-
-          iss4 >> pdg >> numDust >> px >> py >> pz >> e >> m >> x >> y >> z >> t;
-          position.SetXYZT(x, y, z, t);
-          momentum.SetPxPyPzE(px, py, pz, e);
-          iniState->getNucleon(id2).setPosition(position);
-          iniState->getNucleon(id2).setMomentum(momentum);
-          //          cout << linestr << endl;
-          //          cout << "\t" << id2 << "\t" << pdg << "\t" << numDust << "\t" << px << "\t" << py << "\t" << pz <<
-          //          "\t" << e
-          //               << "\t" << m << "\t" << x << "\t" << y << "\t" << z << "\t" << t << "\t" << endl;
-          if(id == id3)
-          {
-            iss5 >> pdg >> numDust >> px >> py >> pz >> e >> m >> x >> y >> z >> t;
-            momentum.SetPxPyPzE(px, py, pz, e);
-            iniState->getNucleon(id).setMomentum(momentum);
-          }
-          else
-            iniState->getNucleon(id).setIsSpectator(false);
-          if(id2 == id4)
-          {
-            iss6 >> pdg >> numDust >> px >> py >> pz >> e >> m >> x >> y >> z >> t;
-            momentum.SetPxPyPzE(px, py, pz, e);
-            iniState->getNucleon(id2).setMomentum(momentum);
-          }
-          else
-            iniState->getNucleon(id2).setIsSpectator(false);
-        }
-        for(int i = 0; i < nOut - 2; i++)
-          getline(inputFile, linestr);
+        getline(inputFile, line);
+        inParticleInfo.push_back(parseParticleInfo(line));
       }
-      // Skip the lines corresponding to collision products
-      else
-        for(int i = 0; i < nIn + nOut; i++)
-          getline(inputFile, linestr);
+      for(int iOut = 0; iOut < nOut; iOut++)
+      {
+        getline(inputFile, line);
+        outParticleInfo.push_back(parseParticleInfo(line));
+      }
+
+      if(nIn < 2)  // not likely for nucleons
+        continue;
+
+      else if(nOut == 0 || inParticleInfo.at(0).at(kIndex) != outParticleInfo.at(0).at(kIndex))  // inelastic process
+      {
+        if(inParticleInfo.at(0).at(kIndex) < nNucl || inParticleInfo.at(1).at(kIndex) < nNucl)
+          nColl++;
+        int first, second;
+        for(first = 0, second = 1; first < 2; first++, second--)
+        {
+          if(inParticleInfo.at(first).at(kIndex) < nNucl)
+          {
+            TLorentzVector position(inParticleInfo.at(first).at(kX), inParticleInfo.at(first).at(kY),
+                                    inParticleInfo.at(first).at(kZ), inParticleInfo.at(first).at(kT));
+            TLorentzVector momentum(inParticleInfo.at(first).at(kPx), inParticleInfo.at(first).at(kPy),
+                                    inParticleInfo.at(first).at(kPz), inParticleInfo.at(first).at(kE));
+            ushort collisionType = inParticleInfo.at(second).at(kIndex) < nNucl ? kInelasticWithInitialNucleon :
+                                                                                  kInelasticWithProducedParticle;
+            iniState->getNucleon(inParticleInfo.at(first).at(kIndex)).setCollisionType(collisionType);
+            iniState->getNucleon(inParticleInfo.at(first).at(kIndex))
+                .addCollidedNucleonIndex(inParticleInfo.at(second).at(kIndex));
+            nPart++;
+            for(auto outInfo : outParticleInfo)
+              if(outInfo.at(kX) == inParticleInfo.at(first).at(kX) &&
+                 outInfo.at(kY) == inParticleInfo.at(first).at(kY) &&
+                 outInfo.at(kE) / inParticleInfo.at(first).at(kE) > 0.9)
+                nColl++;
+          }
+        }
+      }
+
+      else if(nOut == 2 && inParticleInfo.at(0).at(kIndex) == outParticleInfo.at(0).at(kIndex) &&
+              inParticleInfo.at(1).at(kIndex) == outParticleInfo.at(1).at(kIndex))  // elastic scattering
+      {
+        int first, second;
+        for(first = 0, second = 1; first < 2; first++, second--)
+        {
+          if(inParticleInfo.at(first).at(kIndex) < nNucl)
+          {
+            iniState->getNucleon(inParticleInfo.at(first).at(kIndex))
+                .addCollidedNucleonIndex(inParticleInfo.at(second).at(kIndex));
+            if(iniState->getNucleon(inParticleInfo.at(first).at(kIndex)).getCollisionType() == kNoCollision)
+            {
+              TLorentzVector position(inParticleInfo.at(first).at(kX), inParticleInfo.at(first).at(kY),
+                                      inParticleInfo.at(first).at(kZ), inParticleInfo.at(first).at(kT));
+              TLorentzVector momentum(inParticleInfo.at(first).at(kPx), inParticleInfo.at(first).at(kPy),
+                                      inParticleInfo.at(first).at(kPz), inParticleInfo.at(first).at(kE));
+              iniState->getNucleon(inParticleInfo.at(first).at(kIndex)).setPosition(position);
+              iniState->getNucleon(inParticleInfo.at(first).at(kIndex)).setMomentum(momentum);
+              ushort collisionType =
+                  inParticleInfo.at(second).at(kIndex) < nNucl ? kElasticWithInitialNucleon : kElasticWithProducedParticle;
+              iniState->getNucleon(inParticleInfo.at(first).at(kIndex)).setCollisionType(collisionType);
+            }
+          }
+        }
+        
+//        if(inParticleInfo.at(0).at(kIndex) < nNucl)
+//        {
+//          iniState->getNucleon(inParticleInfo.at(0).at(kIndex))
+//              .addCollidedNucleonIndex(inParticleInfo.at(1).at(kIndex));
+//          if(iniState->getNucleon(inParticleInfo.at(0).at(kIndex)).getCollisionType() == kNoCollision)
+//          {
+//            TLorentzVector position(inParticleInfo.at(0).at(kX), inParticleInfo.at(0).at(kY),
+//                                    inParticleInfo.at(0).at(kZ), inParticleInfo.at(0).at(kT));
+//            TLorentzVector momentum(inParticleInfo.at(0).at(kPx), inParticleInfo.at(0).at(kPy),
+//                                    inParticleInfo.at(0).at(kPz), inParticleInfo.at(0).at(kE));
+//            iniState->getNucleon(inParticleInfo.at(0).at(kIndex)).setPosition(position);
+//            iniState->getNucleon(inParticleInfo.at(0).at(kIndex)).setMomentum(momentum);
+//            ushort collisionType =
+//                inParticleInfo.at(1).at(kIndex) < nNucl ? kElasticWithInitialNucleon : kElasticWithProducedParticle;
+//            iniState->getNucleon(inParticleInfo.at(0).at(kIndex)).setCollisionType(collisionType);
+//          }
+//        }
+//        if(inParticleInfo.at(1).at(kIndex) < nNucl)
+//        {
+//          iniState->getNucleon(inParticleInfo.at(1).at(kIndex))
+//              .addCollidedNucleonIndex(inParticleInfo.at(0).at(kIndex));
+//          if(iniState->getNucleon(inParticleInfo.at(1).at(kIndex)).getCollisionType() == kNoCollision)
+//          {
+//            TLorentzVector position(inParticleInfo.at(1).at(kX), inParticleInfo.at(1).at(kY),
+//                                    inParticleInfo.at(1).at(kZ), inParticleInfo.at(1).at(kT));
+//            TLorentzVector momentum(inParticleInfo.at(1).at(kPx), inParticleInfo.at(1).at(kPy),
+//                                    inParticleInfo.at(1).at(kPz), inParticleInfo.at(1).at(kE));
+//            iniState->getNucleon(inParticleInfo.at(1).at(kIndex)).setPosition(position);
+//            iniState->getNucleon(inParticleInfo.at(1).at(kIndex)).setMomentum(momentum);
+//            ushort collisionType =
+//                inParticleInfo.at(0).at(kIndex) < nNucl ? kElasticWithInitialNucleon : kElasticWithProducedParticle;
+//            iniState->getNucleon(inParticleInfo.at(1).at(kIndex)).setCollisionType(collisionType);
+//          }
+//        }
+      }
     }
+
+    // final state particles
+    for(int i = 0; i < nIn; i++)
+    {
+      getline(inputFile, line);
+      UParticle particle = makeParticle(line);
+      event->AddParticle(particle);
+    }
+
+    getline(inputFile, line);  // end of event: "0    0"
+
     iniState->setNColl(nColl);
     iniState->setNPart(nPart);
-
-    // Identify final-state particles and store them
-    //    cout << linestr << endl;
-    //    cout << nIn << "\t" << nOut << endl;
-    if(nIn > 0 && nOut == 0)
-    {
-      for(int i = 0; i < nIn; i++)
-      {
-        int status = 0;
-        int parent = 0;
-        int parentDecay = 0;
-        int mate = 0;
-        int decay = 0;
-        int child[2] = {0, 0};
-        double weight = 1.;
-
-        std::getline(inputFile, linestr);
-        istringstream iss7(linestr);
-        iss7 >> id >> pdg >> numDust >> px >> py >> pz >> e >> m >> x >> y >> z >> t;
-        //                cout << linestr << endl;
-        //        cout << "\t" << id << "\t" << pdg << "\t" << numDust << "\t" << px << "\t" << py << "\t" << pz << "\t"
-        //        << e
-        //             << "\t" << m << "\t" << x << "\t" << y << "\t" << z << "\t" << t << "\t" << endl;
-        TLorentzVector momentum(px, py, pz, e);
-        TLorentzVector position(x, y, z, t);
-        event->AddParticle(id, pdg, status, parent, parentDecay, mate, decay, child, momentum, position, weight);
-      }
-    }
-    if (iEvent == 8) cout << iEvent << "\t" << iniState->getNucleon(200).getId() << "\t" << iniState->getNucleon(201).isSpect() << "\t" << iniState->getNucleon(201).getMomentum().Pz() << endl;
     if(event->GetNpa() > nNucl)
       tree->Fill();
-    getline(inputFile, linestr);
   }
-
   inputFile.close();
-  header->SetNEvents(iEvent);
-  header->Write();
+  header.SetNEvents(eventId);
+  header.Write();
   tree->Write();
   outputFile->Close();
 }

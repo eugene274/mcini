@@ -11,23 +11,33 @@
 
 class BaseConverter;
 
+enum eNucleonCollisionTypes
+{
+  kNoCollision = 0,
+  kElasticWithInitialNucleon,
+  kElasticWithProducedParticle,
+  kInelasticWithInitialNucleon,
+  kInelasticWithProducedParticle,
+  kNnucleonCollisionTypes
+};
+
 class Nucleon : public TObject {
 
 public:
   Nucleon() {}
-  Nucleon(int pdgId, const TLorentzVector &momentum, const TLorentzVector &position, bool isSpectator)
-      : pdgId(pdgId), momentum(momentum), position(position), isSpectator(isSpectator) {}
+  Nucleon(int pdgId, const TLorentzVector &momentum, const TLorentzVector &position, ushort collisionType)
+      : pdgId(pdgId), momentum(momentum), position(position), collisionType(collisionType) {}
   Nucleon(IdType id,
           int pdgId,
           const TLorentzVector &momentum,
           const TLorentzVector &position,
-          bool isSpectator,
+          ushort collisionType,
           const std::vector<IdType> &collidedNucleonIndices)
       : id(id),
         pdgId(pdgId),
         momentum(momentum),
         position(position),
-        isSpectator(isSpectator),
+        collisionType(collisionType),
         collidedNucleonIndices(collidedNucleonIndices) {}
   IdType getId() const {
     return id;
@@ -53,11 +63,11 @@ public:
   void setPosition(const TLorentzVector &position) {
     Nucleon::position = position;
   }
-  bool isSpect() const {
-    return isSpectator;
+  ushort getCollisionType() const {
+    return collisionType;
   }
-  void setIsSpectator(bool isSpectator=true) {
-    Nucleon::isSpectator = isSpectator;
+  void setCollisionType(ushort collisionType) {
+    Nucleon::collisionType = collisionType;
   }
   const std::vector<IdType> &getCollidedNucleonIndices() const {
     return collidedNucleonIndices;
@@ -74,7 +84,7 @@ public:
     pdgId=-1;
     momentum.SetXYZT(0, 0, 0, 999);
     position.SetXYZT(0, 0, 0, 999);
-    isSpectator=true;
+    collisionType=kNoCollision;
     collidedNucleonIndices.clear();
   }
 
@@ -87,7 +97,7 @@ private:
   TLorentzVector momentum{0, 0, 0, 999};
   TLorentzVector position{0, 0, 0, 999};
 
-  bool isSpectator{true};
+  ushort collisionType{kNoCollision};
   std::vector <IdType > collidedNucleonIndices{};
 
   ClassDef(Nucleon, 1)
