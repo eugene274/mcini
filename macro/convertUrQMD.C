@@ -58,14 +58,14 @@ unsigned int nWordsIn(const std::string &str)
   return words;
 }
 
-ifstream openFile(TString inputFileName)
+bool openFile(ifstream &inputFile, TString inputFileName)
 {
-  ifstream inputFile;
+//  ifstream inputFile;
   inputFile.open(inputFileName);
   if(!inputFile)
   {
     printf("File does not exist\n");
-    assert(1);
+    return false;
   }
   else
   {
@@ -76,9 +76,9 @@ ifstream openFile(TString inputFileName)
   if(line != "# OSC1999A")  // check if it is OSCAR1999A format
   {
     cout << "ERROR: Not an OSCAR1999A file!!!\n";
-    assert(1);
+    return false;
   }
-  return inputFile;
+  return true;
 }
 
 URun parseRunHeader(ifstream &inputFile)
@@ -158,7 +158,9 @@ UParticle makeParticle(const string &line)
 
 void convertUrQMD(TString inputFileName = "test.f20", TString outputFileName = "test.root")
 {
-  ifstream inputFile = openFile(inputFileName);
+  ifstream inputFile;
+  if (!openFile(inputFile, inputFileName))
+    return;
   TFile *outputFile = new TFile(outputFileName, "recreate");
   URun header = parseRunHeader(inputFile);
   TString generator;
