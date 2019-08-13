@@ -7,8 +7,8 @@ JAM_EXE=${JAM_EXE:?NO JAM executable found}
 #CONVERTER_EXE=/lustre/nyx/cbm/users/kashirin/soft/mcini/build/JAMReader
 CONVERTER_EXE=${CONVERTER_EXE:?NO JAMReader executable found}
 # absolute path to config template
-#CFG_TMPL=/lustre/nyx/cbm/users/kashirin/sand_box/jamrunner/jam.cfg.template
-CFG_TMPL=${CFG_TMPL:?No jam.cfg.template found}
+CFG_TMPL=$PWD/jam.cfg.template
+#CFG_TMPL=${CFG_TMPL:?No jam.cfg.template found}
 
 WD=$PWD
 
@@ -43,6 +43,8 @@ sed\
         -e 's!@SEED@!'$SEED'!g'\
         -e 's!@INCIDENT_KINE@!'$INCIDENT_KINE'!g'\
         -e 's!@B_MAX@!'$B_MAX'!g'\
+        -e 's!@JAMEOS@!'$JAMEOS'!g'\
+        -e 's!@FRMULT@!'$FRMULT'!g'\
         $CFG_TMPL > $WD/jam.cfg
 
 
