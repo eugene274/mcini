@@ -25,6 +25,12 @@ TARG=197Au
 INCIDENT_KINE=29.7gev
 B_MAX=20
 
+JAMEOS=${JAMEOS:?No JAM EOS file is set}
+#JAMEOS=/lustre/nyx/cbm/users/kashirin/soft/JAM/JAMEOS/eos_MF_HGJAM.dat
+
+FRMULT=${FRMULT:?No frmult.dat file is set}
+#FRMULT=/lustre/nyx/cbm/users/kashirin/soft/JAM/JAMEOS/frmult.dat
+
 echo go!
 
 rm -v phase.dat phase.dat.gz jam.cfg

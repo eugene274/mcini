@@ -16,7 +16,7 @@ mstc(150)=1 ! no hadron cascade after burner
 
 mstc(145)=2 ! make mult. table
 mstc(146)=0 ! Boltzmann approx. for multiplicity
-fname(10)=/u/kashirin/soft/JAM/JAMEOS/frmult.dat
+fname(10)=@FRMULT@
 
 
 parc(140)=0.7325  ! Freeze out energy density
@@ -25,8 +25,8 @@ parc(143)=1.0 ! energy loss parameter
 
 mstc(50)=11   ! first-order p.t. EoS
 #fname(9)=/export/ynara/lib/eos_MF_fullB220.dat    # eos table 1st order
-fname(9)=/u/kashirin/soft/JAM/JAMEOS/eos_MF_HGJAM.dat   # eos table hadron gas
 #fname(9)=/export/ynara/lib/eos_MF_HGK045.dat    # eos table hadron gas
+fname(9)=@JAMEOS@   # eos table hadron gas
 
 #mstc(50)=24   ! first-order p.t. EoS
 #fname(9)=/export/ynara/lib/    # eos table 1st order
