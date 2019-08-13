@@ -1,0 +1,113 @@
+MSTC(1) =@SEED@  #  <------ random seed.
+event=@NEVENTS@
+
+mstc(140)=2   ! jam+hydro simulation on
+mstc(141)=1   !=0 switch hydro at 2R/g/v =1:parc(141) =3:decay 4:eden
+parc(141)=5.0
+mstc(142)=2 ! 1:only mesons 2:hadrons except leading one
+mstc(143)=0 ! fluid-particle interaction
+mstc(144)=1 !  1:Isochronous  2: isoenergy density
+
+mstc(5)=1  ! Number of test particle
+mstc(46)=2 ! full ensemble method
+mstc(147)=1 ! core-corona 
+mstc(148)=10 ! sampling
+mstc(150)=1 ! no hadron cascade after burner
+
+mstc(145)=2 ! make mult. table
+mstc(146)=0 ! Boltzmann approx. for multiplicity
+fname(10)=/u/kashirin/soft/JAM/JAMEOS/frmult.dat
+
+
+parc(140)=0.7325  ! Freeze out energy density
+parc(142)=1.0  ! Width of Gaussian smearing 
+parc(143)=1.0 ! energy loss parameter
+
+mstc(50)=11   ! first-order p.t. EoS
+#fname(9)=/export/ynara/lib/eos_MF_fullB220.dat    # eos table 1st order
+fname(9)=/u/kashirin/soft/JAM/JAMEOS/eos_MF_HGJAM.dat   # eos table hadron gas
+#fname(9)=/export/ynara/lib/eos_MF_HGK045.dat    # eos table hadron gas
+
+#mstc(50)=24   ! first-order p.t. EoS
+#fname(9)=/export/ynara/lib/    # eos table 1st order
+
+#parc(13)=0.5
+#parc(14)=0.5
+
+#fname(9)=/export/ynara/lib/eos_MF_HG.dat    #  hadron gas
+
+proj =@PROJ@
+targ =@TARG@
+
+win=@INCIDENT_KINE@
+bmin=0.0
+bmax=-@B_MAX@
+
+#bmin=0.0
+#bmax=-0.0
+
+frame= nn         # comp. frame  cm, nn, lab, collider
+#frame= collider    # comp. frame  cm, nn, lab, collider
+dt= 0.15       # Time step size(fm/c)
+timestep = 200    # total number of time step.
+#dt = 7.0
+#timestep = 1    # total number of time step.
+
+#***************************************************>
+#***** Optional input of mstc and parc   ***********>
+#***************************************************>
+#fname(2)=XXX     # Front page
+#fname(3)=YYY     # Some Information
+
+mstc(8)=1      # <----- job mode. =0:Job.
+#mstc(10)= 1     # <------ impact parameter bin number
+parc(5)= 0.0    ! initial z
+parc(6)= 5.0   #  scale of display
+mstc(16)= 0    # <------ display on/off.
+parc(8)=0.3
+ 
+## anal
+#mstc(155)=0     # flow anal.
+#mstc(156)=0     # energy distribution of collisions
+#mstc(157)=0     # output ground state
+#mstc(162)=0     ! Output collision histroy
+ 
+mstc(163)=1     ! time evolution of directed transverse flow
+parc(163)=1.0
+#mstc(164)=3     ! Output phase space data in time interval
+#parc(164)=15.0
+#parc(165)=15.0
+#mstc(165)=1     ! Output time evolution of particle yield
+#mstc(166)=1     ! Output time evolution of particle density
+mstc(167)=1     ! Output time evolution of particle density (Gaussian smearing)
+#parc(167)=2.0
+#mstc(170)=1     ! Output time evolution of particle density (Gaussian smearing)
+ 
+parc(7)= 0.30    ! Output time interval (fm/c)
+ 
+###########################################################################
+#  The following parameters Should not be changed by the normal users!!!!
+###########################################################################
+# collision
+#mstc(61)=2       # Resonance decay angular distribution 0: isotropic
+#parc(43)=0.4     # Resonance decay width of pt
+#parc(9)=0.0      # u-t mixing ratio for the resonance decay
+#mstc(51)=3      # h-q coll.
+#mstc(53)= 1     # <----formation time prescription in collsions.
+#mstc(72)= 3     # <----formation piont of hadrons in string decay.
+#parc(55)= 1.0   # formation time
+#mstc(81)= 0     # <--- 1:Hard scattering on/off
+#mstp(92)=3   ! energy partitioning of remnant
+
+! String
+#mstc(71)=1      # diffractive reaction
+#mstc(73)= 2     # <==== 2:popcon
+#mstc(74)=0      # dipole-approximated QCD radiation of the string
+
+#### TEST ####
+#mstc(55)= 1    # 1:frozen resonance
+#mstc(76)= 1     # string has a lifetime
+#parc(57)= 0.1   # string lifetime
+
+end
+****************** end input ***********************************************
