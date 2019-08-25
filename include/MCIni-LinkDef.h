@@ -10,8 +10,9 @@
 #pragma link off all global;
 #pragma link off all typedef;
 
-#pragma link C++ class Nucleon+;
+#pragma link C++ class Nucleon-;
 #pragma link C++ class EventInitialState+;
+
 #pragma link C++ class URun+;
 #pragma link C++ class UEvent+;
 #pragma link C++ class UParticle+;

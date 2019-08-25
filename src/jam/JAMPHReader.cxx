@@ -50,12 +50,11 @@ void parseNucleon(const string& line) {
          x >> y >> z >>
          px >> py >> pz >> energy >> mass;
 
+  getEntity<Nucleon>()->Clear();
   getEntity<Nucleon>()->setPdgId(pdgCode);
   getEntity<Nucleon>()->setNucleus(nucleus);
   getEntity<Nucleon>()->setPosition(TLorentzVector(x, y, z, 0.));
   getEntity<Nucleon>()->setMomentum(TLorentzVector(px, py, pz, energy));
-  getEntity<Nucleon>()->Print();
-
 }
 
 void nucleonPostProcess() {
@@ -70,21 +69,23 @@ bool parseNextJAMPHEvent() {
   string line;
 
   bool isEventHeaderFound = false;
+  float eventTime{0.};
 
-  streampos prevLinePosition{gJAMPHFile->tellg()};
+  streampos prevLinePosition{};
 
   while (prevLinePosition = gJAMPHFile->tellg(), getline(*gJAMPHFile, line)) {
     if (line[0] == '#') {
       if (isEventHeaderFound) {
-        cout << "event end" << endl;
         // undo read
         gJAMPHFile->seekg(prevLinePosition);
         break;
       }
 
       // this is event header
-      cout << "event start" << endl;
       isEventHeaderFound = true;
+      string hash;
+      stringstream stream(line);
+      stream >> hash >> eventTime;
       continue;
     }
 

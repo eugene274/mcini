@@ -27,7 +27,7 @@ T *getEntity() {
 
   if (!entityPtr) {
     entityPtr.reset(new T);
-    Warning(__func__, "Created new '%s'", typeid(T).name());
+    Info(__func__, "Created new '%s'", typeid(T).name());
   }
 
   return entityPtr.get();
