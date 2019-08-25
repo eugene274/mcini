@@ -139,3 +139,13 @@ EParseStatus parseJAMRunInfo(const string &pathToJAMRunInfo) {
   return parseStatus_;
 }
 
+unsigned int countWordsInTheString(const std::string &str) {
+  std::stringstream stream(str);
+  std::string word;
+  unsigned int words = 0;
+  while (stream >> word) {
+    ++words;
+  }
+  return words;
+}
+

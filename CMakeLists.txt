@@ -14,5 +14,5 @@ ROOT_GENERATE_DICTIONARY(
 add_library(McIniData SHARED G__McIniData.cxx src/URun.cxx src/UEvent.cxx src/UParticle.cxx src/Nucleon.cxx src/EventInitialState.cxx)
 target_link_libraries(McIniData PRIVATE ${ROOT_LIBRARIES})
 
-add_executable(JAMReader src/jam/JAMRunInfo.cxx src/jam/JAMReader.cxx)
+add_executable(JAMReader src/jam/JAMRUNReader.cxx src/jam/JAMReader.cxx src/jam/JAMPHReader.cxx)
 target_link_libraries(JAMReader PUBLIC McIniData ${ROOT_LIBRARIES})

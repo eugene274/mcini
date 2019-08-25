@@ -11,8 +11,6 @@
 #include "BasicTypes.h"
 #include "Nucleon.h"
 
-class BaseConverter;
-
 class EventInitialState : public TObject {
 
 public:
@@ -63,7 +61,6 @@ public:
   
 
 private:
-  friend class BaseConverter;
   IdType id{0};
 
   unsigned int nColl{0};

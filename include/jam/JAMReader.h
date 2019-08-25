@@ -8,6 +8,10 @@
 #include <URun.h>
 #include <UEvent.h>
 #include <EventInitialState.h>
+
+#include <string>
+#include <sstream>
+
 enum class EParseStatus : ushort {
   kSuccess = 0,
   kNotInitialized,
@@ -29,6 +33,12 @@ T *getEntity() {
   return entityPtr.get();
 }
 
+unsigned int countWordsInTheString(const std::string &str);
+
 EParseStatus parseJAMRunInfo(const std::string &pathToJAMRunInfo);
+
+
+void openJAMPHFile(const std::string &inputFileName);
+bool parseNextJAMPHEvent();
 
 #endif //MCINIDATA_JAMREADER_H

@@ -18,7 +18,6 @@ using std::stringstream;
 using std::string;
 using std::cout;
 using std::endl;
-}
 
 enum class ELineType {
   kRunHeader,
@@ -28,18 +27,12 @@ enum class ELineType {
   kUnknown
 };
 
+}
+
 TFile *gOutputFile{nullptr};
 TTree *gEventTree{nullptr};
 
-unsigned int countWordsInTheString(const std::string &str) {
-  std::stringstream stream(str);
-  std::string word;
-  unsigned int words = 0;
-  while (stream >> word) {
-    ++words;
-  }
-  return words;
-}
+
 
 void parseRunHeader(const string &line) {
   stringstream stream(line);
@@ -122,6 +115,11 @@ void particlePostProcess() {
 void previousEventPostProcess() {
   getEntity<UEvent>()->Print();
 
+  auto jamphParseResult = parseNextJAMPHEvent();
+  if (!jamphParseResult) {
+    throw std::logic_error("Mismatch between JAMPH and phase.dat");
+  }
+
   if (getEntity<EventInitialState>()->getNColl() != 0) {
     gEventTree->Fill();
   }
@@ -146,6 +144,11 @@ int main(int argc, char **argv) {
     runInfoFileName = string(argv[3]);
   }
 
+  string jamphFileName{"JAMPH.000"};
+  if (argc > 4) {
+    jamphFileName = string(argv[4]);
+  }
+
   ifstream inputFile(argv[1]);
   gOutputFile = TFile::Open(jamOutputFileName.c_str(), "recreate");
 
@@ -155,6 +158,8 @@ int main(int argc, char **argv) {
 
   bool hasPreviousEvent{false};
   unsigned int nEvents{0};
+
+  openJAMPHFile(jamphFileName);
 
   string line;
   while (std::getline(inputFile, line)) {
