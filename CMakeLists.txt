@@ -7,7 +7,7 @@ find_package(ROOT REQUIRED)
 if (NOT ROOT_FOUND)
     message(WARNING "ROOT was not found with CMAKE_PREFIX_PATH...")
     list(APPEND CMAKE_MODULE_PATH $ENV{ROOTSYS}/etc/cmake)
-    find_package(ROOT REQUIRED COMPONENTS RIO Tree)
+    find_package(ROOT REQUIRED)
 endif ()
 
 if (ROOT_USE_FILE)

@@ -3,7 +3,7 @@
 //
 
 // some C++ header definition
-#ifdef __ROOTCLING__
+#if defined(__ROOTCLING__) || defined(__MAKECINT__)
 // turns off dictionary generation for all
 #pragma link off all class;
 #pragma link off all function;

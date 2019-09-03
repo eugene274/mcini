@@ -11,8 +11,7 @@
 
 class BaseConverter;
 
-enum eNucleonCollisionTypes
-{
+enum eNucleonCollisionTypes {
   kNoCollision = 0,
   kElasticWithInitialNucleon,
   kElasticWithProducedParticle,
@@ -23,10 +22,10 @@ enum eNucleonCollisionTypes
 
 class Nucleon : public TObject {
 
-public:
-  Nucleon() {}
+ public:
+  Nucleon() : id(0), pdgId(-1), momentum(0, 0, 0, 999), position(0, 0, 0, 999) {}
   Nucleon(int pdgId, const TLorentzVector &momentum, const TLorentzVector &position, unsigned short collisionType)
-      : pdgId(pdgId), momentum(momentum), position(position), collisionType(collisionType) {}
+      : id(0), pdgId(pdgId), momentum(momentum), position(position), collisionType(collisionType) {}
   Nucleon(IdType id,
           int pdgId,
           const TLorentzVector &momentum,
@@ -79,29 +78,28 @@ public:
     collidedNucleonIndices.push_back(index);
   }
 
-  void Clear(Option_t* = "") {
+  void Clear(Option_t * = "") {
     id = 0;
     pdgId = -1;
     momentum.SetXYZT(0, 0, 0, 999);
     position.SetXYZT(0, 0, 0, 999);
-    collisionType=kNoCollision;
+    collisionType = kNoCollision;
     collidedNucleonIndices.clear();
   }
 
-private:
+ private:
   friend class BaseConverter;
   IdType id;
 
-  int pdgId = -1;
+  int pdgId;
 
-  TLorentzVector momentum{0, 0, 0, 999};
-  TLorentzVector position{0, 0, 0, 999};
+  TLorentzVector momentum;
+  TLorentzVector position;
 
   unsigned short collisionType{kNoCollision};
-  std::vector <IdType> collidedNucleonIndices{};
+  std::vector<IdType> collidedNucleonIndices{};
 
-  ClassDef(Nucleon, 1)
+ ClassDef(Nucleon, 1)
 };
-
 
 #endif //MCININUCLEONH
