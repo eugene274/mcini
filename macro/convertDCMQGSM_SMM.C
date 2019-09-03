@@ -5,14 +5,12 @@
 
 #include <fstream>
 #include <iostream>
-#include <string>
-#include <map>
 
 using namespace std;
 
 void convertDCMQGSM_SMM (TString inFile  = "CAS-SMM-evt.out", TString outFile = "test", int nEvents = 5000, int splitFactor = 1)
 {
-
+  gSystem->Load ("libMcIniData.so");
   const char* generator = "DCMQGSM-SMM";
   const char* comment = "";
   double aProj;
@@ -44,8 +42,8 @@ void convertDCMQGSM_SMM (TString inFile  = "CAS-SMM-evt.out", TString outFile = 
   bool skipFlag;
 
   ifstream *InputFile = new ifstream (inFile);
-  TTree *tree {nullptr};
-  TFile *f {nullptr};
+  TTree *tree = NULL;
+  TFile *f = NULL;
   TDatabasePDG db;
   
   *InputFile >> aProj >> zProj >> aTarg >> zTarg >> T0 >> sqrtS;
@@ -102,7 +100,7 @@ void convertDCMQGSM_SMM (TString inFile  = "CAS-SMM-evt.out", TString outFile = 
         else if (iBaryon == -1 && iCharge == 0) pdgType = -2112;
         else
         {
-          cout << "Undef spectator:\t" << eventNr << "\t" << iTrack << "\n" << iBaryon << "\t" << iCharge << "\t" << iStrangeness << "\t" << px << "\t" << py << "\t" << pz << "\t" << endl;
+//          cout << "Undef spectator:\t" << eventNr << "\t" << iTrack << "\n" << iBaryon << "\t" << iCharge << "\t" << iStrangeness << "\t" << px << "\t" << py << "\t" << pz << "\t" << endl;
           iTrack ++;
           continue;
         }
