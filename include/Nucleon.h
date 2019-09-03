@@ -96,8 +96,8 @@ class Nucleon : public TObject {
   TLorentzVector momentum;
   TLorentzVector position;
 
-  unsigned short collisionType{kNoCollision};
-  std::vector<IdType> collidedNucleonIndices{};
+  unsigned short collisionType = kNoCollision;
+  std::vector<IdType> collidedNucleonIndices;
 
  ClassDef(Nucleon, 1)
 };
