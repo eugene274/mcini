@@ -241,11 +241,14 @@ void convertUrQMD(TString inputFileName = "test.f20", TString outputFileName = "
             iniState->getNucleon(inParticleInfo.at(first).at(kIndex))
                 .addCollidedNucleonIndex(inParticleInfo.at(second).at(kIndex));
             nPart++;
-            for(auto outInfo : outParticleInfo)
+            for(int i = 0; i < outParticleInfo.size(); i++)
+	    {
+	      vector<float> outInfo = outParticleInfo.at(i);
               if(outInfo.at(kX) == inParticleInfo.at(first).at(kX) &&
                  outInfo.at(kY) == inParticleInfo.at(first).at(kY) &&
                  outInfo.at(kE) / inParticleInfo.at(first).at(kE) > 0.9)
                 nColl++;
+	    }
           }
         }
       }

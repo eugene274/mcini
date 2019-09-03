@@ -25,13 +25,13 @@ class Nucleon : public TObject {
 
 public:
   Nucleon() {}
-  Nucleon(int pdgId, const TLorentzVector &momentum, const TLorentzVector &position, ushort collisionType)
+  Nucleon(int pdgId, const TLorentzVector &momentum, const TLorentzVector &position, unsigned short collisionType)
       : pdgId(pdgId), momentum(momentum), position(position), collisionType(collisionType) {}
   Nucleon(IdType id,
           int pdgId,
           const TLorentzVector &momentum,
           const TLorentzVector &position,
-          ushort collisionType,
+          unsigned short collisionType,
           const std::vector<IdType> &collidedNucleonIndices)
       : id(id),
         pdgId(pdgId),
@@ -63,10 +63,10 @@ public:
   void setPosition(const TLorentzVector &position) {
     Nucleon::position = position;
   }
-  ushort getCollisionType() const {
+  unsigned short getCollisionType() const {
     return collisionType;
   }
-  void setCollisionType(ushort collisionType) {
+  void setCollisionType(unsigned short collisionType) {
     Nucleon::collisionType = collisionType;
   }
   const std::vector<IdType> &getCollidedNucleonIndices() const {
@@ -80,8 +80,8 @@ public:
   }
 
   void Clear(Option_t* = "") {
-    id=0;
-    pdgId=-1;
+    id = 0;
+    pdgId = -1;
     momentum.SetXYZT(0, 0, 0, 999);
     position.SetXYZT(0, 0, 0, 999);
     collisionType=kNoCollision;
@@ -92,13 +92,13 @@ private:
   friend class BaseConverter;
   IdType id;
 
-  int pdgId{-1};
+  int pdgId = -1;
 
   TLorentzVector momentum{0, 0, 0, 999};
   TLorentzVector position{0, 0, 0, 999};
 
-  ushort collisionType{kNoCollision};
-  std::vector <IdType > collidedNucleonIndices{};
+  unsigned short collisionType{kNoCollision};
+  std::vector <IdType> collidedNucleonIndices{};
 
   ClassDef(Nucleon, 1)
 };

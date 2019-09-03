@@ -16,7 +16,7 @@ class BaseConverter;
 class EventInitialState : public TObject {
 
 public:
-  EventInitialState() = default;
+  EventInitialState() {};
   IdType getId() const {
     return id;
   }

@@ -1,8 +1,19 @@
 cmake_minimum_required(VERSION 3.1)
 project(McIniData)
 
+list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
 find_package(ROOT REQUIRED)
-include(${ROOT_USE_FILE})
+
+if (NOT ROOT_FOUND)
+    message(WARNING "ROOT was not found with CMAKE_PREFIX_PATH...")
+    list(APPEND CMAKE_MODULE_PATH $ENV{ROOTSYS}/etc/cmake)
+    find_package(ROOT REQUIRED COMPONENTS RIO Tree)
+endif ()
+
+if (ROOT_USE_FILE)
+    message("-- ROOT_USE_FILE ${ROOT_USE_FILE}")
+    include(${ROOT_USE_FILE})
+endif ()
 
 include_directories(include ${CMAKE_SOURCE_DIR})
 
