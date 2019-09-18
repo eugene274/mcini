@@ -90,6 +90,7 @@ void convertDCMQGSM_SMM (TString inFile  = "CAS-SMM-evt.out", TString outFile = 
       header = new URun(generator, comment, aProj, zProj, pProj, aTarg, zTarg, pTarg, bMin, bMax, bWeight, phiMin, phiMax, sigma, eventsPerFile);
       header->Write();
       tree->Branch("event", "UEvent", event);
+      tree->Branch("iniState", "EventInitialState", iniState);
       filenum++;
     }
 
