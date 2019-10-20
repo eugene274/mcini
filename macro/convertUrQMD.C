@@ -1,8 +1,8 @@
 // 1. Participants - position and momentum in the last collision
 // 2. Spectators - position and momentum in the first collision
-// 3. Ncoll - number of inelastic collisions between nucleons and all their ancestors till 50% of the initial nucleon
-// energy is dissipated - to be done. Meanwhile any inelastic scattering of nucleon (x2 if one of its ancestors is
-// carrying 90% of its energy).
+// 3. Ncoll - number of inelastic collisions between initial nucleons and all their daugters till 50% of the initial nucleon
+// energy is dissipated - to be done. Meanwhile any inelastic scattering of initial nucleon (x2 if one of scattering 
+// products is carrying 90% of its energy).
 
 #include <fstream>
 #include <iostream>
