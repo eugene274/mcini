@@ -5,7 +5,17 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+/* Test for GCC > 4.9.0 */
+#if __GNUC__ > 4 || \
+  (__GNUC__ == 9 && (__GNUC_MINOR__ > 0 || \
+  (__GNUC_MINOR__ == 0 && \
+    __GNUC_PATCHLEVEL__ > 0)))
 #include <regex>
+#else
+#include <boost/regex.hpp>
+using boost::regex;
+using boost::smatch;
+#endif
 
 #include <jam/JAMReader.h>
 #include <URun.h>

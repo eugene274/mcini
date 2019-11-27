@@ -17,6 +17,12 @@ if (ROOT_USE_FILE)
     include(${ROOT_USE_FILE})
 endif ()
 
+if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.9.0)
+    message(WARNING "GCC compiler is older than 4.9.0. Boost library must be used!")
+    find_package(Boost REQUIRED COMPONENTS regex)
+    include_directories(${Boost_INCLUDE_DIRS})
+endif ()
+
 include_directories(include ${CMAKE_SOURCE_DIR})
 
 ROOT_GENERATE_DICTIONARY(
@@ -28,4 +34,8 @@ add_library(McIniData SHARED G__McIniData.cxx src/URun.cxx src/UEvent.cxx src/UP
 target_link_libraries(McIniData PRIVATE ${ROOT_LIBRARIES})
 
 add_executable(JAMReader src/jam/JAMRunInfo.cxx src/jam/JAMReader.cxx)
-target_link_libraries(JAMReader PUBLIC McIniData ${ROOT_LIBRARIES})
+if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 4.9.0)
+  target_link_libraries(JAMReader PUBLIC McIniData ${ROOT_LIBRARIES})
+elseif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.9.0)
+  target_link_libraries(JAMReader PUBLIC McIniData ${ROOT_LIBRARIES} ${Boost_LIBRARIES})
+endif ()
