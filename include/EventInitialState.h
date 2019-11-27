@@ -16,7 +16,7 @@ class BaseConverter;
 class EventInitialState : public TObject {
 
 public:
-  EventInitialState() = default;
+  EventInitialState() {};
   IdType getId() const {
     return id;
   }
@@ -69,12 +69,12 @@ public:
 
 private:
   friend class BaseConverter;
-  IdType id{0};
+  IdType id = 0;
 
-  unsigned int nColl{0};
-  unsigned int nPart{0};
+  unsigned int nColl = 0;
+  unsigned int nPart = 0;
 
-  std::vector <Nucleon> nucleons{0};
+  std::vector <Nucleon> nucleons;
 
 
 

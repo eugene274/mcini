@@ -22,8 +22,9 @@ void demo(TString inputFileName="test.root")
   {
     tree->GetEntry(iEvent);
     vector<Nucleon> nucleons = iniState->getNucleons();
-    for(auto nucleon : nucleons)
+    for(int iNucl = 0; iNucl < nucleons.size(); iNucl++)
     {
+      Nucleon nucleon = nucleons.at(iNucl);
       TLorentzVector position = nucleon.getPosition();
       if(nucleon.getCollisionType()==3 || nucleon.getCollisionType()==4)
         h2Part->Fill(position.X(), position.Y());

@@ -1,8 +1,8 @@
 // 1. Participants - position and momentum in the last collision
 // 2. Spectators - position and momentum in the first collision
-// 3. Ncoll - number of inelastic collisions between nucleons and all their ancestors till 50% of the initial nucleon
-// energy is dissipated - to be done. Meanwhile any inelastic scattering of nucleon (x2 if one of its ancestors is
-// carrying 90% of its energy).
+// 3. Ncoll - number of inelastic collisions between initial nucleons and all their daugters till 50% of the initial nucleon
+// energy is dissipated - to be done. Meanwhile any inelastic scattering of initial nucleon (x2 if one of scattering 
+// products is carrying 90% of its energy).
 
 #include <fstream>
 #include <iostream>
@@ -241,11 +241,14 @@ void convertUrQMD(TString inputFileName = "test.f20", TString outputFileName = "
             iniState->getNucleon(inParticleInfo.at(first).at(kIndex))
                 .addCollidedNucleonIndex(inParticleInfo.at(second).at(kIndex));
             nPart++;
-            for(auto outInfo : outParticleInfo)
+            for(int i = 0; i < outParticleInfo.size(); i++)
+	    {
+	      vector<float> outInfo = outParticleInfo.at(i);
               if(outInfo.at(kX) == inParticleInfo.at(first).at(kX) &&
                  outInfo.at(kY) == inParticleInfo.at(first).at(kY) &&
                  outInfo.at(kE) / inParticleInfo.at(first).at(kE) > 0.9)
                 nColl++;
+	    }
           }
         }
       }
