@@ -1,4 +1,4 @@
-R__LOAD_LIBRARY(/mnt/pool/rhic/4/parfenovpeter/Soft/mcini/build/libMcIniData.so)
+R__LOAD_LIBRARY(/nica/mpd21/parfenov/Soft/mcini/build/libMcIniData.so)
 
 using namespace std;
 
@@ -140,7 +140,7 @@ void convert(TString inputFileName="test.root", TString outputFileName="out.root
       d_ene[iPart]   = momentum.E();
       d_pdg[iPart]   = particle->GetPdg();
       d_hid[iPart]   = particle->GetParent();
-      d_charge[iPart]= TMath::Sign(1,particle->GetPdg());
+      d_charge[iPart]= 1./3.*TDatabasePDG::Instance()->GetParticle(particle->GetPdg())->Charge();
     }
     mctree->Fill();
   }
