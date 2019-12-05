@@ -1,8 +1,8 @@
 // 1. Participants - position and momentum in the last collision
 // 2. Spectators - position and momentum in the first collision
-// 3. Ncoll - number of inelastic collisions between initial nucleons and all their daugters till 50% of the initial nucleon
-// energy is dissipated - to be done. Meanwhile any inelastic scattering of initial nucleon (x2 if one of scattering 
-// products is carrying 90% of its energy).
+// 3. Ncoll - number of inelastic collisions between nucleons and all their ancestors till 50% of the initial nucleon
+// energy is dissipated - to be done. Meanwhile any inelastic scattering of nucleon (x2 if one of its ancestors is
+// carrying 90% of its energy).
 
 #include <fstream>
 #include <iostream>
@@ -60,7 +60,7 @@ unsigned int nWordsIn(const std::string &str)
 
 bool openFile(ifstream &inputFile, TString inputFileName)
 {
-//  ifstream inputFile;
+  //  ifstream inputFile;
   inputFile.open(inputFileName);
   if(!inputFile)
   {
@@ -156,10 +156,10 @@ UParticle makeParticle(const string &line)
   return particle;
 }
 
-void convertUrQMD(TString inputFileName = "test.f20", TString outputFileName = "test.root")
+void convertUrQMD(TString inputFileName = "test.f20", TString outputFileName = "test.root", float tFinal = -1.)
 {
   ifstream inputFile;
-  if (!openFile(inputFile, inputFileName))
+  if(!openFile(inputFile, inputFileName))
     return;
   TFile *outputFile = new TFile(outputFileName, "recreate");
   URun header = parseRunHeader(inputFile);
@@ -219,7 +219,10 @@ void convertUrQMD(TString inputFileName = "test.f20", TString outputFileName = "
         outParticleInfo.push_back(parseParticleInfo(line));
       }
 
-      if(nIn < 2)  // not likely for nucleons
+      if(nIn < 2)  // decay is not likely for nucleons
+        continue;
+
+      if(tFinal > 0. && inParticleInfo.at(0).at(kT) > tFinal)
         continue;
 
       else if(nOut == 0 || inParticleInfo.at(0).at(kIndex) != outParticleInfo.at(0).at(kIndex))  // inelastic process
@@ -237,18 +240,20 @@ void convertUrQMD(TString inputFileName = "test.f20", TString outputFileName = "
                                     inParticleInfo.at(first).at(kPz), inParticleInfo.at(first).at(kE));
             ushort collisionType = inParticleInfo.at(second).at(kIndex) < nNucl ? kInelasticWithInitialNucleon :
                                                                                   kInelasticWithProducedParticle;
-            iniState->getNucleon(inParticleInfo.at(first).at(kIndex)).setCollisionType(collisionType);
-            iniState->getNucleon(inParticleInfo.at(first).at(kIndex))
-                .addCollidedNucleonIndex(inParticleInfo.at(second).at(kIndex));
+            Nucleon &firstNucleon = iniState->getNucleon(inParticleInfo.at(first).at(kIndex));
+            firstNucleon.setPosition(position);
+            firstNucleon.setMomentum(momentum);
+            firstNucleon.setCollisionType(collisionType);
+            firstNucleon.addCollidedNucleonIndex(inParticleInfo.at(second).at(kIndex));
             nPart++;
             for(int i = 0; i < outParticleInfo.size(); i++)
-	    {
-	      vector<float> outInfo = outParticleInfo.at(i);
+            {
+              vector<float> outInfo = outParticleInfo.at(i);
               if(outInfo.at(kX) == inParticleInfo.at(first).at(kX) &&
-                 outInfo.at(kY) == inParticleInfo.at(first).at(kY) &&
-                 outInfo.at(kE) / inParticleInfo.at(first).at(kE) > 0.9)
+                 outInfo.at(kY) == inParticleInfo.at(first).at(kY) &&  // one of outgoing particles 
+                 outInfo.at(kE) / inParticleInfo.at(first).at(kE) > 0.9) // carries 90% of one of incoming nucleon's energy
                 nColl++;
-	    }
+            }
           }
         }
       }
@@ -261,57 +266,22 @@ void convertUrQMD(TString inputFileName = "test.f20", TString outputFileName = "
         {
           if(inParticleInfo.at(first).at(kIndex) < nNucl)
           {
-            iniState->getNucleon(inParticleInfo.at(first).at(kIndex))
-                .addCollidedNucleonIndex(inParticleInfo.at(second).at(kIndex));
-            if(iniState->getNucleon(inParticleInfo.at(first).at(kIndex)).getCollisionType() == kNoCollision)
+            Nucleon &firstNucleon = iniState->getNucleon(inParticleInfo.at(first).at(kIndex));
+            firstNucleon.addCollidedNucleonIndex(inParticleInfo.at(second).at(kIndex));
+            if(firstNucleon.getCollisionType() == kNoCollision)
             {
               TLorentzVector position(inParticleInfo.at(first).at(kX), inParticleInfo.at(first).at(kY),
                                       inParticleInfo.at(first).at(kZ), inParticleInfo.at(first).at(kT));
               TLorentzVector momentum(inParticleInfo.at(first).at(kPx), inParticleInfo.at(first).at(kPy),
                                       inParticleInfo.at(first).at(kPz), inParticleInfo.at(first).at(kE));
-              iniState->getNucleon(inParticleInfo.at(first).at(kIndex)).setPosition(position);
-              iniState->getNucleon(inParticleInfo.at(first).at(kIndex)).setMomentum(momentum);
-              ushort collisionType =
-                  inParticleInfo.at(second).at(kIndex) < nNucl ? kElasticWithInitialNucleon : kElasticWithProducedParticle;
-              iniState->getNucleon(inParticleInfo.at(first).at(kIndex)).setCollisionType(collisionType);
+              ushort collisionType = inParticleInfo.at(second).at(kIndex) < nNucl ? kElasticWithInitialNucleon :
+                                                                                    kElasticWithProducedParticle;
+              firstNucleon.setCollisionType(collisionType);
+              firstNucleon.setPosition(position);
+              firstNucleon.setMomentum(momentum);
             }
           }
         }
-        
-//        if(inParticleInfo.at(0).at(kIndex) < nNucl)
-//        {
-//          iniState->getNucleon(inParticleInfo.at(0).at(kIndex))
-//              .addCollidedNucleonIndex(inParticleInfo.at(1).at(kIndex));
-//          if(iniState->getNucleon(inParticleInfo.at(0).at(kIndex)).getCollisionType() == kNoCollision)
-//          {
-//            TLorentzVector position(inParticleInfo.at(0).at(kX), inParticleInfo.at(0).at(kY),
-//                                    inParticleInfo.at(0).at(kZ), inParticleInfo.at(0).at(kT));
-//            TLorentzVector momentum(inParticleInfo.at(0).at(kPx), inParticleInfo.at(0).at(kPy),
-//                                    inParticleInfo.at(0).at(kPz), inParticleInfo.at(0).at(kE));
-//            iniState->getNucleon(inParticleInfo.at(0).at(kIndex)).setPosition(position);
-//            iniState->getNucleon(inParticleInfo.at(0).at(kIndex)).setMomentum(momentum);
-//            ushort collisionType =
-//                inParticleInfo.at(1).at(kIndex) < nNucl ? kElasticWithInitialNucleon : kElasticWithProducedParticle;
-//            iniState->getNucleon(inParticleInfo.at(0).at(kIndex)).setCollisionType(collisionType);
-//          }
-//        }
-//        if(inParticleInfo.at(1).at(kIndex) < nNucl)
-//        {
-//          iniState->getNucleon(inParticleInfo.at(1).at(kIndex))
-//              .addCollidedNucleonIndex(inParticleInfo.at(0).at(kIndex));
-//          if(iniState->getNucleon(inParticleInfo.at(1).at(kIndex)).getCollisionType() == kNoCollision)
-//          {
-//            TLorentzVector position(inParticleInfo.at(1).at(kX), inParticleInfo.at(1).at(kY),
-//                                    inParticleInfo.at(1).at(kZ), inParticleInfo.at(1).at(kT));
-//            TLorentzVector momentum(inParticleInfo.at(1).at(kPx), inParticleInfo.at(1).at(kPy),
-//                                    inParticleInfo.at(1).at(kPz), inParticleInfo.at(1).at(kE));
-//            iniState->getNucleon(inParticleInfo.at(1).at(kIndex)).setPosition(position);
-//            iniState->getNucleon(inParticleInfo.at(1).at(kIndex)).setMomentum(momentum);
-//            ushort collisionType =
-//                inParticleInfo.at(0).at(kIndex) < nNucl ? kElasticWithInitialNucleon : kElasticWithProducedParticle;
-//            iniState->getNucleon(inParticleInfo.at(1).at(kIndex)).setCollisionType(collisionType);
-//          }
-//        }
       }
     }
 
