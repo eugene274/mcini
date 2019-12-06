@@ -32,6 +32,8 @@ void initQA(TString inputFileName="test.root", TString outputFileName="output.ro
 
   TProfile *pEcc2vsB[nCollTypes];
   TProfile *pEcc3vsB[nCollTypes];
+  TProfile *pEcc2RPvsB[nCollTypes];
+  TProfile *pEcc3RPvsB[nCollTypes];
   TProfile *pNscvsB[nCollTypes];
 
   TProfile *pNscCorr[nCollTypes][nCollTypes];
@@ -41,6 +43,8 @@ void initQA(TString inputFileName="test.root", TString outputFileName="output.ro
   {
     pEcc2vsB[i] = new TProfile(Form("pEcc2vsB%i",i),Form("pEcc2vsB%i",i),200,0,20);
     pEcc3vsB[i] = new TProfile(Form("pEcc3vsB%i",i),Form("pEcc3vsB%i",i),200,0,20);
+    pEcc2RPvsB[i] = new TProfile(Form("pEcc2RPvsB%i",i),Form("pEcc2RPvsB%i",i),200,0,20);
+    pEcc3RPvsB[i] = new TProfile(Form("pEcc3RPvsB%i",i),Form("pEcc3RPvsB%i",i),200,0,20);
     pNscvsB[i]  = new TProfile(Form("pNscvsB%i",i), Form("pNscvsB%i",i), 200,0,20);
     for (int j=0; j<nCollTypes; j++)
     {
@@ -56,6 +60,7 @@ void initQA(TString inputFileName="test.root", TString outputFileName="output.ro
   double averX, averY;
   double posX, posY;
   double ecc2, ecc3;
+  double ecc2RP, ecc3RP;
   double ncount;
   double phi, rsqr;
   double Ecc2[nCollTypes], Ecc3[nCollTypes];
@@ -130,10 +135,14 @@ void initQA(TString inputFileName="test.root", TString outputFileName="output.ro
       aver3    /= ncount;
       if (aver2 != 0) ecc2 = TMath::Sqrt(avercos2*avercos2 + aversin2*aversin2)/ aver2;
       if (aver3 != 0) ecc3 = TMath::Sqrt(avercos3*avercos3 + aversin3*aversin3)/ aver3;
+      if (aver2 != 0) ecc2RP = avercos2 / aver2;
+      if (aver3 != 0) ecc3RP = avercos3 / aver3;
       if (iEvent%1000 == 0) std::cout << "\tNpart(std) = " << iniState->getNPart()
         << " Nscattered[" << i << "] = " << Nscatt[i] << std::endl;
       if (aver2 != 0) pEcc2vsB[i]->Fill(event->GetB(),ecc2);
       if (aver3 != 0) pEcc3vsB[i]->Fill(event->GetB(),ecc3);
+      if (aver2 != 0) pEcc2RPvsB[i]->Fill(event->GetB(),ecc2RP);
+      if (aver3 != 0) pEcc3RPvsB[i]->Fill(event->GetB(),ecc3RP);
       pNscvsB[i]->Fill(event->GetB(),Nscatt[i]);
     }
     for (int i=0; i<nCollTypes; i++)
@@ -158,6 +167,8 @@ void initQA(TString inputFileName="test.root", TString outputFileName="output.ro
   {
     pEcc2vsB[i]->Write();
     pEcc3vsB[i]->Write();
+    pEcc2RPvsB[i]->Write();
+    pEcc3RPvsB[i]->Write();
     pNscvsB[i]->Write();
   }
   fo->cd("Nscattered_Correlations/Profiles");
