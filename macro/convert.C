@@ -1,4 +1,4 @@
-R__LOAD_LIBRARY(/nica/mpd21/parfenov/Soft/mcini/build/libMcIniData.so)
+R__LOAD_LIBRARY(libMcIniData.so)
 
 using namespace std;
 

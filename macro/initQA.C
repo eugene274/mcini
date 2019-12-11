@@ -35,6 +35,12 @@ void initQA(TString inputFileName="test.root", TString outputFileName="output.ro
   TProfile *pEcc2RPvsB[nCollTypes];
   TProfile *pEcc3RPvsB[nCollTypes];
   TProfile *pNscvsB[nCollTypes];
+  TProfile *pNuclTvsB[nCollTypes];
+
+  TH2D     *hNuclXY[nCollTypes];
+  TH2D     *hNuclEtaPt[nCollTypes];
+  TH2D     *hNuclYPt[nCollTypes];
+  TH1D     *hNuclT[nCollTypes];
 
   TProfile *pNscCorr[nCollTypes][nCollTypes];
   TH2I     *hNscCorr[nCollTypes][nCollTypes];
@@ -46,6 +52,11 @@ void initQA(TString inputFileName="test.root", TString outputFileName="output.ro
     pEcc2RPvsB[i] = new TProfile(Form("pEcc2RPvsB%i",i),Form("pEcc2RPvsB%i",i),200,0,20);
     pEcc3RPvsB[i] = new TProfile(Form("pEcc3RPvsB%i",i),Form("pEcc3RPvsB%i",i),200,0,20);
     pNscvsB[i]  = new TProfile(Form("pNscvsB%i",i), Form("pNscvsB%i",i), 200,0,20);
+    pNuclTvsB[i] = new TProfile(Form("pNuclTvsB%i",i), Form("pNuclTvsB%i",i), 200,0,20);
+    hNuclXY[i]  = new TH2D(Form("hNuclXY%i",i),Form("hNuclXY%i",i),300,-15,15,300,-15,15);
+    hNuclEtaPt[i] = new TH2D(Form("hNuclEtaPt%i",i),Form("hNuclEtaPt%i",i),400,-10.,10.,500,0.,5.);
+    hNuclYPt[i] = new TH2D(Form("hNuclYPt%i",i),Form("hNuclYPt%i",i),400,-10.,10.,500,0.,5.);
+    hNuclT[i] = new TH1D(Form("hNuclT%i",i),Form("hNuclT%i",i),2000,0.,200.);
     for (int j=0; j<nCollTypes; j++)
     {
       pNscCorr[i][j] = new TProfile(Form("pNscCorr_%i_%i",i,j), Form("pNscCorr_%i_%i",i,j), 394,0,394);
@@ -86,6 +97,8 @@ void initQA(TString inputFileName="test.root", TString outputFileName="output.ro
       for(auto nucleon : nucleons)
       {
         TLorentzVector position = nucleon.getPosition();
+        TLorentzVector momentum = nucleon.getMomentum();
+        //if (position.T() > 2.830) continue;
         if((i < 5 && nucleon.getCollisionType()==i) ||
           ((i >= 5 && i < 6) && (nucleon.getCollisionType()==3 || nucleon.getCollisionType()==4)) ||
           (i == 6 && nucleon.getCollisionType()!= 0) ||
@@ -94,6 +107,11 @@ void initQA(TString inputFileName="test.root", TString outputFileName="output.ro
           ncount++;
           averX += position.X();
           averY += position.Y();
+          hNuclXY[i]->Fill(position.X(),position.Y());
+          hNuclEtaPt[i]->Fill(momentum.Eta(),momentum.Pt());
+          hNuclYPt[i]->Fill(momentum.Rapidity(),momentum.Pt());
+          hNuclT[i]->Fill(position.T());
+          pNuclTvsB[i]->Fill(event->GetB(),position.T());
         }
       }
       if (ncount == 0) continue;
@@ -104,6 +122,7 @@ void initQA(TString inputFileName="test.root", TString outputFileName="output.ro
       for(auto nucleon : nucleons)
       {
         TLorentzVector position = nucleon.getPosition();
+        //if (position.T() > 2.830) continue;
         if((i < 5 && nucleon.getCollisionType()==i) ||
           ((i >= 5 && i < 6) && (nucleon.getCollisionType()==3 || nucleon.getCollisionType()==4)) ||
           (i == 6 && nucleon.getCollisionType()!= 0) ||
@@ -170,6 +189,11 @@ void initQA(TString inputFileName="test.root", TString outputFileName="output.ro
     pEcc2RPvsB[i]->Write();
     pEcc3RPvsB[i]->Write();
     pNscvsB[i]->Write();
+    pNuclTvsB[i]->Write();
+    hNuclXY[i]->Write();
+    hNuclEtaPt[i]->Write();
+    hNuclYPt[i]->Write();
+    hNuclT[i]->Write();
   }
   fo->cd("Nscattered_Correlations/Profiles");
   for (int i=0; i<nCollTypes; i++)
