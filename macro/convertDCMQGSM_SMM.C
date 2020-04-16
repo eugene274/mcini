@@ -10,7 +10,7 @@ using namespace std;
 
 int getPdgType (int iBaryon, int iCharge, int iStrangeness = 0)
 {
-  int pdgType = abs (iBaryon) * 10 + abs (iCharge) * 1e4 + 1e9;
+  int pdgType = abs (iStrangeness) * 1e7 + abs (iBaryon) * 10 + abs (iCharge) * 1e4 + 1e9;
   if (iStrangeness != 0) pdgType *= -abs (iStrangeness) / iStrangeness;
   return pdgType;
 }
@@ -166,7 +166,7 @@ void convertDCMQGSM_SMM (TString inFile  = "CAS-SMM-evt.out", TString outFile = 
     for (int iTrack = 0; iTrack < nTracks; iTrack++, index++ )
     {
       *InputFile >> pid >> iBaryon >> iCharge >> iStrangeness >> px >> py >> pz >> mass;
-//      cout << pid << iBaryon << "\t" << iCharge << "\t" << iStrangeness << "\t"<< px << "\t" << py << "\t" << pz << "\t" << mass << endl;
+//      cout << pid << "\t" << iBaryon << "\t" << iCharge << "\t" << iStrangeness << "\t"<< px << "\t" << py << "\t" << pz << "\t" << mass << endl;
       if (pid == 0)
       {
         pdgType = getPdgType (iBaryon, iCharge, iStrangeness);
