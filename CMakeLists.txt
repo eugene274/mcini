@@ -34,8 +34,8 @@ add_library(McIniData SHARED G__McIniData.cxx src/URun.cxx src/UEvent.cxx src/UP
 target_link_libraries(McIniData PRIVATE ${ROOT_LIBRARIES})
 
 add_executable(JAMReader src/jam/JAMRunInfo.cxx src/jam/JAMReader.cxx)
-if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 4.9.0)
-  target_link_libraries(JAMReader PUBLIC McIniData ${ROOT_LIBRARIES})
-elseif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.9.0)
+if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.9.0)
   target_link_libraries(JAMReader PUBLIC McIniData ${ROOT_LIBRARIES} ${Boost_LIBRARIES})
+else()
+  target_link_libraries(JAMReader PUBLIC McIniData ${ROOT_LIBRARIES})
 endif ()
