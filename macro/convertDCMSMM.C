@@ -48,7 +48,6 @@ URun *makeRunHeader(ifstream &inputFile)
   float mProton = 0.938272029;
   string line, generator = "DCM-SMM";
   const char *comment = "";
-  string charDust;
   float bWeight = 1, eBeam, bMin = 0, bMax = 20.0, phiMin = 0, phiMax = 2 * TMath::Pi(), sigma = 0, nEvents = 0;
 
   getline(inputFile, line);  // generator and system info
@@ -194,7 +193,6 @@ void convertDCMSMM(TString inputFileName = "outfile.r12",
   int eventsPerFile = nEvents / (float)splitFactor;
 
   int filenum = 0;
-  bool skipFlag;
 
   ifstream inputFile;
   if(!openFile(inputFile, inputFileName))

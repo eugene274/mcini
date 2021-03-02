@@ -142,7 +142,7 @@ void addParticle(ifstream &inputFile, UEvent *event, int partIndex)
   string line;
   getline(inputFile, line);
   int nWords = nWordsIn(line);
-  if(nWords != 7 && nWords != 8)
+  if(nWords != 7 && nWords != 8 && nWords != 9)
   {
     cout << "Wrong number of variables in particle info! Aborting!\n";
     cout << line << endl;
