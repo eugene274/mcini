@@ -87,6 +87,9 @@ void convertSmashParticles(TString inputFileName = "particles.root", TString out
     {
         fTree->GetEntry(iev);
 
+        event->Clear();
+        iniState->Clear();
+
         if (iev % 100 == 0) std::cout << "Event [" << iev << "/" << nentries << "]" << std::endl;
 
         if (only_not_empty && t_empty_event) continue;
