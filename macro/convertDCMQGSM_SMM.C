@@ -9,7 +9,7 @@
 
 using namespace std;
 
-int verbosity = kError;
+int verbosity = kWarning;
 
 int getPdgCode (int baryonNr, int charge, int strangeness = 0)
 {
@@ -80,7 +80,7 @@ bool openFile(ifstream &inputFile, TString inputFileName)
   return true;
 }
 
-URun *makeRunHeader(ifstream &inputFile)
+URun *makeRunHeader(ifstream &inputFile, bool swapProjTarg)
 {
   float mProton = TDatabasePDG::Instance()->GetParticle(2212)->Mass();
   string line, generator = "DCM-QGSM-SMM";
@@ -99,6 +99,10 @@ URun *makeRunHeader(ifstream &inputFile)
   if (verbosity <= kInfo) 
     cout << "\t" << aProj << "\t" << zProj << "\t" << aTarg << "\t" << zTarg << "\t" << eBeam << "\t" << sqrtS << endl;
 
+  if (swapProjTarg) {
+    std::swap(zProj,zTarg);
+    std::swap(aProj,aTarg);
+  }
   float pProj = sqrt(0.5 * mProton * eBeam);
   float pTarg = -pProj;
 
@@ -141,7 +145,7 @@ bool fillEventInfo(string &line, UEvent *event, EventInitialState *iniState, int
   return true;
 }
 
-bool addResidual(ifstream &inputFile, EventInitialState *iniState, int resType, bool &skipFlag)
+bool addResidual(ifstream &inputFile, EventInitialState *iniState, int resType, bool &skipFlag, bool swapProjTarg, bool allowPosPzTargetSpect)
 {
   string line;
   getline(inputFile, line);
@@ -152,7 +156,7 @@ bool addResidual(ifstream &inputFile, EventInitialState *iniState, int resType, 
     return false;
   }
   int baryonNr, charge, pdgCode;
-  float eExcitation, x = 0, y = 0, z, t=resType, px, py, pz, m;
+  float eExcitation, x = 0, y = 0, z, t, px, py, pz, m;
   stringstream(line) >> baryonNr >> charge >> eExcitation >> px >> py >> pz;
   if(verbosity <= kInfo)
   {
@@ -161,10 +165,15 @@ bool addResidual(ifstream &inputFile, EventInitialState *iniState, int resType, 
     cout << baryonNr << "\t" << charge << "\t" << eExcitation << "\t" << px
          << "\t" << py << "\t" << pz << endl;
   }
+  if (swapProjTarg) {
+    pz *= -1.;
+    resType *= -1;
+  }
   z = eExcitation; // just to store it somewhere
+  t=resType;
   pdgCode = getPdgCode(baryonNr, charge);
   m = getMass(pdgCode);
-  if (t < 0. && pz > 0.) skipFlag = true;  // exclude events with positive Pz of target spectators
+  if (!allowPosPzTargetSpect && resType < 0. && pz > 0.) skipFlag = true;  // exclude events with positive Pz of target spectators
 
   TLorentzVector position(x, y, z, t);
   TLorentzVector momentum;
@@ -179,7 +188,7 @@ bool addResidual(ifstream &inputFile, EventInitialState *iniState, int resType, 
   return true;
 }
 
-bool addSpectator(ifstream &inputFile, UEvent *event, int spectIndex, int spectType)
+bool addSpectator(ifstream &inputFile, UEvent *event, int spectIndex, int spectType, bool swapProjTarg)
 {
   string line;
   getline(inputFile, line);
@@ -201,6 +210,10 @@ bool addSpectator(ifstream &inputFile, UEvent *event, int spectIndex, int spectT
          << "\t" << py << "\t" << pz << endl;
   }
  
+  if (swapProjTarg) {
+    pz *= -1.;
+    spectType *= -1;
+  }
   z=eExcitation; // just to store it somewhere 
   pdgCode = getPdgCode (baryonNr, charge);
   if (pdgCode==0)
@@ -217,7 +230,7 @@ bool addSpectator(ifstream &inputFile, UEvent *event, int spectIndex, int spectT
   return true;
 }
 
-bool addParticle(ifstream &inputFile, UEvent *event, int partIndex)
+bool addParticle(ifstream &inputFile, UEvent *event, int partIndex, bool swapProjTarg)
 {
   string line;
   getline(inputFile, line);
@@ -232,15 +245,10 @@ bool addParticle(ifstream &inputFile, UEvent *event, int partIndex)
   int status = 0, parent = -1, parentDecay = 0, mate = 0, decay = 0, child[2] = {0, 0};
   double x = 0., y = 0., z, t = 0, weight = 1., px, py, pz, e, m;
   stringstream(line) >> pdgCode >> baryonNr >> charge >> strangeness >> px >> py >> pz >> m;
-  if(verbosity <= kInfo)
-  {
-    cout << "addParticle:\n";
-    cout << line << endl;
-    cout << pdgCode << "\t" << baryonNr << "\t" << charge << "\t" << strangeness << "\t" << px
-         << "\t" << py << "\t" << pz << "\t" << m << "\t" << e << endl;
-  }
+  if (swapProjTarg) pz *= -1.;
   e = sqrt(px * px + py * py + pz * pz + m * m);
   pdgCode = TDatabasePDG::Instance()->ConvertIsajetToPdg(pdgCode);
+  if (pdgCode==0) pdgCode = getPdgCode(baryonNr, charge, strangeness);
   if (pdgCode == 3122 && m > 1.120)
   {
     if (verbosity <= kWarning)
@@ -248,15 +256,24 @@ bool addParticle(ifstream &inputFile, UEvent *event, int partIndex)
     pdgCode = 3212;
     status = 1;
   }
+  if(verbosity <= kInfo)
+  {
+    cout << "addParticle:\n";
+    cout << line << endl;
+    cout << pdgCode << "\t" << baryonNr << "\t" << charge << "\t" << strangeness << "\t" << px
+         << "\t" << py << "\t" << pz << "\t" << m << "\t" << e << endl;
+  }
   event->AddParticle(partIndex, pdgCode, status, parent, parentDecay, mate, decay, child, px, py, pz, e, x, y, z, t,
                      weight);
   return true;
 }
 
 void convertDCMQGSM_SMM(TString inputFileName = "CAS-SMM-evt.out",
-                   TString outFile = "test",
-                   int nEvents = 5000,
-                   int splitFactor = 1)
+                        const char *outFile = "test",
+                        int nEvents = 5000,
+                        int splitFactor = 1,
+                        bool swapProjTarg = false,
+			bool allowPosPzTargetSpect=false)
 {
   gSystem->Load("libMcIniData.so");
   const float mProton = TDatabasePDG::Instance()->GetParticle(2212)->Mass();
@@ -267,7 +284,7 @@ void convertDCMQGSM_SMM(TString inputFileName = "CAS-SMM-evt.out",
   ifstream inputFile;
   if(!openFile(inputFile, inputFileName))
     return;
-  URun *header = makeRunHeader(inputFile);
+  URun *header = makeRunHeader(inputFile, swapProjTarg);
   if(!header)
     return;
   TString generator;
@@ -293,7 +310,7 @@ void convertDCMQGSM_SMM(TString inputFileName = "CAS-SMM-evt.out",
         f->Close();
         nEvent = 0;
       }
-      f = new TFile(Form("%s_%d.root", outFile.Data(), filenum), "recreate");
+      f = new TFile(Form("%s_%d.root", outFile, filenum), "recreate");
       tree = new TTree("events", generator);
       tree->Branch("event", "UEvent", event);
       tree->Branch("iniState", "EventInitialState", iniState);
@@ -310,7 +327,7 @@ void convertDCMQGSM_SMM(TString inputFileName = "CAS-SMM-evt.out",
     int index = 0;
     for(int spectType = 1; spectType >= -1; spectType-=2) // -1 for target and 1 for projectile spectators
     {
-      if (!addResidual(inputFile, iniState, spectType, skipFlag)) 
+      if (!addResidual(inputFile, iniState, spectType, skipFlag, swapProjTarg, allowPosPzTargetSpect)) 
         return;
     }
     for(int spectType = 1; spectType >= -1; spectType-=2) // -1 for target and 1 for projectile spectators
@@ -331,7 +348,7 @@ void convertDCMQGSM_SMM(TString inputFileName = "CAS-SMM-evt.out",
       }
       for(int iSpect = 0; iSpect < nSpect; iSpect++)
       {
-        if (!addSpectator(inputFile, event, index, spectType))
+        if (!addSpectator(inputFile, event, index, spectType, swapProjTarg))
           return;
         else index++;
       }
@@ -353,14 +370,14 @@ void convertDCMQGSM_SMM(TString inputFileName = "CAS-SMM-evt.out",
     }
     for(int iPart = 0; iPart < nProduced; iPart++)
     {
-      if (!addParticle(inputFile, event, index))
+      if (!addParticle(inputFile, event, index, swapProjTarg))
         return;
       else index++;
     }
     if (!skipFlag)
       tree->Fill();
     else if (verbosity <= kError)
-      cout << "ERROR: skipping event due to presence of target spectators with positive Pz!!!\n";
+      cout << "ERROR: skipping event #" << (filenum - 1) * eventsPerFile + nEvent << " due to presence of target spectators with positive Pz!!!\n";
   }
 
   cout << "\rEvent # " << nEvent << endl;

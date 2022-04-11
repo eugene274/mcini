@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.1)
 project(McIniData)
 
-set(CMAKE_CXX_STANDARD 11)
-
 list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
 find_package(ROOT REQUIRED)
 
